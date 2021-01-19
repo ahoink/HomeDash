@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
+  </head>
+  <body>
+	<ul>
+		<li><a href="/">Home</a></li>
+		<li><a href="/tasks">Tasks</a></li>
+<!--    <li><a href="/stats">Stats</a></li> -->
+		<li><a href="/expenses">Expenses</a></li>
+		<li><a class="active" href="/plants">Plants</a></li>
+	</ul>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);"></table>
+	<form id="myForm" action="#" method="POST" onsubmit="submitNewPlant();return false">
+		<b><u>Add New Plant</u></b>
+		<br>
+		Name/Description:
+		<input type="text" id="pname" name="pname" size="15">
+		<br>
+		<input type="submit" class="myButton" id="psubmit" value="Submit">
+	</form>
+	<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>
+	<div id="loader"></div>	
+	<script src="static/js/plants.js"></script>
+	<script>
+		var data = JSON.parse('{{ data | tojson | safe}}');
+		constructTable('#table', data);
+	</script>
+  </body>
+</html>

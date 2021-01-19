@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
+  </head>
+  <body>
+	<ul>
+		<li><a href="/">Home</a></li>
+		<li><a class="active" href="/tasks">Tasks</a></li>
+<!--    <li><a href="/stats">Stats</a></li> -->
+		<li><a href="/expenses">Expenses</a></li>
+		<li><a href="/plants">Plants</a></li>
+	</ul>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);"></table>
+	<form id="myForm" action="#" method="POST" onsubmit="submitNewTask();return false">
+		<b><u>Add New Task</u></b>
+		<br>
+		Task Name:
+		<input type="text" id="tname" name="tname" size="15">
+		<br>
+		Frequency:
+		<input type="text" id="tfreq" name="tfreq" size="3">
+		<br>
+		Weight:
+		<input type="text" id="twt" name="twt" size="3">
+		<br>
+		<input type="submit" class="myButton" id="tsubmit" value="Submit">
+	</form>
+	<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>
+	<div id="loader"></div>	
+	<script src="static/js/tasks.js"></script>
+	<script>
+		var data = JSON.parse('{{ data | tojson | safe}}');
+    	constructTable('#table', data);
+	</script>
+  </body>
+</html>

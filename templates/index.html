@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<link rel="stylesheet" type="text/css" href="static/css/weather-icons.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
+  </head>
+  <body>
+	<ul>
+		<li><a class="active" href="/">Home</a></li>
+		<li><a href="/tasks">Tasks</a></li>
+<!--	<li><a href="/stats">Stats</a></li> -->
+		<li><a href="/expenses">Expenses</a></li>
+		<li><a href="/plants">Plants</a></li>
+	</ul>
+	<pre id="productivity"><b>Productivity</b></pre>
+	<a id="prod_val" href="/stats" style="text-decoration:none"><b>0%</b></a>
+	<pre id="expenses"><b>Remaining Expenses this Month</b></pre>
+	<pre id="exp_val"><b>$0.00</b></pre>
+	<pre id="due_today"><b>Tasks Due Today</b></pre>
+	<table class="stylized" id="table" border="1" onClick="handleClick(event);"></table>
+	<hr>
+	<pre id="exp_due_week"><b>Expenses this Week</b></pre>
+	<table class="stylized" id="table2" border="1"></table>	
+	
+	<hr>
+	<pre id="lan_status"><b><u>LAN Status</u></b></pre>
+	<span class="status_circle" id="st_host1"></span>
+	<pre class"status_host" id="txt_host1">host1</pre>
+	<span class="status_circle" id="st_host2"></span>
+	<pre class"status_host" id="txt_host2">host2</pre>
+
+	<hr>
+	<pre id="weather"><b><u>Weather</u></b></pre>
+	<i id="currentIcon" style="font-size: 25px;"></i>
+	<pre id="current">72F (feels like 72F)</pre>
+	<pre id="hourlyLabel"><i>Next 6 hours:</i></pre>
+	<pre id="hourlyTime"><u>0 1 2 3 4 5</u></pre>
+	<pre id="hourly">72F 72F 72F 72F 72F 72F</pre>
+	<i id="icon_hr1"></i>
+	<i id="icon_hr2"></i>
+	<i id="icon_hr3"></i>
+	<i id="icon_hr4"></i>
+	<i id="icon_hr5"></i>
+	<i id="icon_hr6"></i>
+	<pre id="sunlight"><b>Sunlight at back window: 00:00 - 23:59</b></pre>
+	<div id="loader"></div>
+	<script src="static/js/summary.js"></script>
+	<script>
+		var data = JSON.parse('{{ data | tojson | safe}}');
+		setTextFromData('prod_val', data["prod"]);
+		setTextFromData('exp_val', data["exp"]);
+		constructTable('#table', data["tasks"], "Tasks");
+		constructTable('#table2', data["expenses"], "Expenses");
+
+		setHostStatus(data["ping"]);
+
+		setWeatherInfo(data["weather"])
+		
+document.getElementById('sunlight').innerHTML = "<b>Sunlight at back window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
+		this.setInterval(perUpdate, 3600000) // Update summary every hour
+	</script>
+  </body>
+</html>

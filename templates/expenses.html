@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
+  </head>
+  <body>
+	<ul>
+		<li><a href="/">Home</a></li>
+		<li><a href="/tasks">Tasks</a></li>
+<!--    <li><a href="/stats">Stats</a></li> -->
+		<li><a class="active" href="/expenses">Expenses</a></li>
+		<li><a href="/plants">Plants</a></li>
+	</ul>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);"></table>
+	<form id="myForm" action="#" method="POST" onsubmit="submitNewExp();return false">
+		<b><u>Add New Expense</u></b>
+		<br>
+		<label for="name">Expense Name:</label><input type="text" id="name" name="name" size="15">
+		<br>
+		<label for="amt">Amount: $</label><input type="text" id="amt" name="amt" size="7">
+		<br>
+		<label for="due">Due Date (DOM):</label><input type="text" id="due" name="due" size="3">
+		<br>
+		Autopay:
+		<input type="checkbox" id="autopay" name="autopay">
+		Variable:
+		<input type="checkbox" id="isvar" name="isvar">
+		<br>
+		<input type="submit" class="myButton" id="tsubmit" value="Submit">
+	</form>
+	<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>
+
+	<img src={{ image }} style="max-width:100%;height:auto;" alt="expense plot">
+    <pre id="txtarea"><b>Expense Stats</b></pre>
+	<script src="static/js/expenses.js"></script>
+	<script>
+		var data = JSON.parse('{{ data | tojson | safe}}');
+		var stats = JSON.parse('{{ stats | tojson | safe}}');
+        var txt = document.getElementById("txtarea");
+
+		displayStats()
+        constructTable('#table', data)
+		
+	</script>
+  </body>
+</html>

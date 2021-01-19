@@ -1,0 +1,4 @@
+#!/bin/bash
+
+screen -S homedash -d -m python HomeDash.py
+pgrep -n python >server.pid
