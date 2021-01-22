@@ -46,6 +46,32 @@ table.stylized tfoot .links a{
   border-radius: 5px;
 }
 
+table.simple {
+  font-family: Arial;
+  border: 2px solid #FFFFFF;
+  border-collapse: collapse;
+  width: 300px;
+  text-align: center;
+  margin-left: 30px;
+}
+table.simple td {
+  font-size: 15px;
+  border-left: 1px solid #333333;
+  padding: 3px 4px;
+}
+
+table.simple th {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333333;
+  text-align: center;
+  border-left: 2px solid #333333;
+  border-bottom: 2px solid #333333;
+}
+table.simple th:first-child {
+  border-left: none;
+}
+
 button.stylized, input[type=submit] {
 	-webkit-appearance: none;
 	box-shadow:inset 0px 1px 0px 0px #7a8eb9;

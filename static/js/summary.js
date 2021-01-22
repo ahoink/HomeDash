@@ -28,26 +28,18 @@ function setWeatherInfo(data)
 	var hourly = document.getElementById("hourly");
 	var hourlyTimes = document.getElementById("hourlyTime");
 
-	current.innerHTML = " " + data["temp"]["actual"] + "F (feels like " + data["temp"]["feels"] + "F) | " + data["humidity"] + "% humid";
+	current.innerHTML = " " + data["temp"]["actual"] + "&#176F (feels like " + data["temp"]["feels"] + "&#176F) | " + data["humidity"] + "% humid";
 	$("#currentIcon").addClass(currentIcon);
-	
-	hourlyTimes.innerHTML = "\t";
-	hourly.innerHTML = "\t";
+	var table = document.getElementById("weatherTbl");
 	for (var i = 0; i < data["hourly"].length; i++)
 	{
 		var hr_icon = "wi wi-owm-" + data["hourly"][i]["d_n"] + "-" + data["hourly"][i]["wid"];
 		var icon = document.getElementById("icon_hr" + String(i+1));
-
-		hourlyTimes.innerHTML += "<u>" + data["hourly"][i]["time"] + "\t";
-		hourly.innerHTML += data["hourly"][i]["temp"]["actual"] + "F\t";
+		table.rows[0].cells[i].innerHTML = data["hourly"][i]["time"];
+		table.rows[1].cells[i].innerHTML = data["hourly"][i]["temp"]["actual"] + "&#176F";
 		$("#icon_hr" + String(i+1)).addClass(hr_icon);
-		if (i == 0)
-			icon.style.marginLeft=40;
-		else
-			icon.style.marginLeft=7;
-		icon.style.marginRight=7;
+		
 	}
-	hourlyTimes.innerHTML += "</u>";
 }
 
 // Dynamically create table with rows and columns based on data passed in

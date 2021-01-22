@@ -36,14 +36,34 @@
 	<i id="currentIcon" style="font-size: 25px;"></i>
 	<pre id="current">72F (feels like 72F)</pre>
 	<pre id="hourlyLabel"><i>Next 6 hours:</i></pre>
-	<pre id="hourlyTime"><u>0 1 2 3 4 5</u></pre>
-	<pre id="hourly">72F 72F 72F 72F 72F 72F</pre>
-	<i id="icon_hr1"></i>
-	<i id="icon_hr2"></i>
-	<i id="icon_hr3"></i>
-	<i id="icon_hr4"></i>
-	<i id="icon_hr5"></i>
-	<i id="icon_hr6"></i>
+	<table class="simple" id="weatherTbl">
+		<tr>
+			<th>0</th>
+			<th>1</th>
+			<th>2</th>
+			<th>3</th>
+			<th>4</th>
+			<th>5</th>
+		</tr>
+		<tr>
+			<td>72F</td>
+			<td>72F</td>
+			<td>72F</td>
+			<td>72F</td>
+			<td>72F</td>
+			<td>72F</td>
+		</tr>
+		<tr>
+	<!-- <pre id="hourlyTime"><u>0 1 2 3 4 5</u></pre>
+	<pre id="hourly">72F 72F 72F 72F 72F 72F</pre> -->
+			<td><i id="icon_hr1"></i></td>
+			<td><i id="icon_hr2"></i></td>
+			<td><i id="icon_hr3"></i></td>
+			<td><i id="icon_hr4"></i></td>
+			<td><i id="icon_hr5"></i></td>
+			<td><i id="icon_hr6"></i></td>
+		</tr>
+	</table>
 	<pre id="sunlight"><b>Sunlight at back window: 00:00 - 23:59</b></pre>
 	<div id="loader"></div>
 	<script src="static/js/summary.js"></script>
