@@ -69,7 +69,10 @@ class ExpenseTracker():
 		if dt.month == 12:
 			new_dt = datetime(dt.year+1, 1, dt.day, 12, 0, 0)
 		else:
-			new_dt = datetime(dt.year, dt.month+1, dt.day, 12, 0, 0)
+			if dt.day >= 29 and dt.month == 1:
+				new_dt = datetime(dt.year, dt.month+1, 28, 12, 0, 0)
+			else:
+				new_dt = datetime(dt.year, dt.month+1, dt.day, 12, 0, 0)
 		return int(new_dt.timestamp())
 
 	def addExpense(self, name, amount, date, autopay, isvar):
