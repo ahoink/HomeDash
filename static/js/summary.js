@@ -120,13 +120,21 @@ function handleClick(evt)
 	});
 }
 
+function checkLAN()
+{
+	$.get("/getlan", function(data, status) {
+		setHostStatus(data);
+	});
+
+}
+
 function perUpdate()
 {
 	$.get("/getsummary", function(data, status) {
 		setTextFromData('prod_val', data["prod"]);
 		setTextFromData('exp_val', data["exp"]);
-		constructTable('#table', data["tasks"], "Tasks")
-		setHostStatus(data["ping"]);
+		constructTable('#table', data["tasks"], "Tasks");
+		//setHostStatus(data["ping"]);
 		setWeatherInfo(data["weather"]);
 	});
 }

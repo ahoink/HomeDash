@@ -78,9 +78,9 @@ def getHomeData(update=False):
 	config = readConfig()
 
 	# ping local hosts
-	hosts = config["hosts"]
-	for h in hosts:
-		ndata[h] = NetworkTracker.ping(hosts[h])
+	#hosts = config["hosts"]
+	#for h in hosts:
+	#	ndata[h] = NetworkTracker.ping(hosts[h])
 
 	# get sun data
 	lat = config["lat"]
@@ -97,7 +97,7 @@ def getHomeData(update=False):
 	data["prod"] = pdata
 	data["exp"] = edata
 	if not update: data["sunlight"] = {"start": start, "end": end}
-	data["ping"] = ndata
+	#data["ping"] = ndata
 	data["weather"] = wdata
 
 	return data
@@ -144,6 +144,18 @@ def favicon():
 	return send_from_directory("./static", "favicon.png", mimetype="image/png")
 
 # ENDPOINTS
+@app.route("/getlan", methods=["GET"])
+def getLANStatus():
+	config = readConfig()
+	data = {}
+
+	# ping local hosts
+	hosts = config["hosts"]
+	for h in hosts:
+		data[h] = NetworkTracker.ping(hosts[h])
+	return Response(json.dumps(data), mimetype="text/json")
+
+
 @app.route("/gettasks", methods=["GET"])
 def getTasks():
 	data = task_proc.getTaskList()

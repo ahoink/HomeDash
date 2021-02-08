@@ -30,7 +30,8 @@
 	<pre class"status_host" id="txt_host1">host1</pre>
 	<span class="status_circle" id="st_host2"></span>
 	<pre class"status_host" id="txt_host2">host2</pre>
-
+	<span class="status_circle" id="st_host3"></span>
+	<pre class"status_host" id="txt_host3">host3</pre>
 	<hr>
 	<pre id="weather"><b><u>Weather</u></b></pre>
 	<i id="currentIcon" style="font-size: 25px;"></i>
@@ -74,12 +75,15 @@
 		constructTable('#table', data["tasks"], "Tasks");
 		constructTable('#table2', data["expenses"], "Expenses");
 
-		setHostStatus(data["ping"]);
+		//setHostStatus(data["ping"]);
 
 		setWeatherInfo(data["weather"])
 		
 document.getElementById('sunlight').innerHTML = "<b>Sunlight at back window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
+		checkLAN();
+
 		this.setInterval(perUpdate, 3600000) // Update summary every hour
+		this.setInterval(checkLAN, 600000) // Update LAN status every 10 min
 	</script>
   </body>
 </html>
