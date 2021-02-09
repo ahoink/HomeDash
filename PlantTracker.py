@@ -2,11 +2,12 @@ import time
 from datetime import datetime
 
 MAX_SCORE = 1.5
-WMA_INT = 7
+FREQ_MA = 3
 
 class PlantTracker():
 	def __init__(self):
 		self.plants = readData()
+		self.freqs = getFreqs()
 		self.prev_state = [[x for x in y] for y in self.plants]
 		self.init = False
 	
@@ -24,12 +25,13 @@ class PlantTracker():
 	def getPlantList(self):
 		#self.scorePlants()
 		plnts = []
-		hdrs = ["Plant", "Last Watered"]
+		hdrs = ["Plant", "Last Watered", "Frequency"]
 		sorted_plants = sorted(self.plants, key=lambda x: x[0], reverse=True) # sort by name
 		for p in sorted_plants:
 			temp = {}
 			temp[hdrs[0]] = p[0] 											# Plant name
 			temp[hdrs[1]] = time.strftime("%b %d", time.localtime(p[1]))	# Last watered (Month Date)
+			temp[hdrs[2]] = secToTimeString(self.freqs.get(p[0], 0))		# Avg watering frequency
 			temp["Color"] = self.getColorFromScore(p[-1])					# Color hex code
 			plnts.append(temp)	
 		return {"Headers":hdrs, "Plants":plnts}
@@ -76,6 +78,9 @@ class PlantTracker():
 		saveData(self.plants)
 		writeUpdate(plant_name, tnow)
 
+		# recalc avg frequencies
+		self.freqs = getFreqs()
+
 		resp = [time.strftime("%b %d", time.localtime(tnow))]
 		return resp
 
@@ -102,30 +107,57 @@ def saveData(data):
 		for p in data:
 			f.write("%s,%d\n" % (p[0], p[1]))
 
+def readStats():
+	stats = []
+	with open("data/plant_stats.csv", 'r') as f:
+		stats = f.readlines()
+	return stats
+
 def writeUpdate(plant, t):
 	with open("data/plant_stats.csv", 'a') as f:
 		f.write("%s,%d\n" % (plant, t))
 
 def remLastStatEntry():
 	data = []
-	with open("data/stats.csv", 'r') as f:
+	with open("data/plant_stats.csv", 'r') as f:
 		data = f.readlines()
 	data = data[:-1]
-	with open("data/stats.csv", 'w') as f:
+	with open("data/plant_stats.csv", 'w') as f:
 		for d in data:
 			f.write(d)
+
+def getFreqs():
+	stats = readStats()
+	stats = stats[::-1]
+	plant_times = {}
+	plant_freqs = {}
+	for s in stats:
+		splitted = s.replace("\n", "").split(',')
+		temp = plant_times.get(splitted[0], [])
+		if len(temp) >= (FREQ_MA + 1): continue
+		temp.append(int(splitted[1]))
+		plant_times[splitted[0]] = temp
+
+	for p in plant_times:
+		times = plant_times[p]
+		avg = 0
+		num = min(len(times)-1, FREQ_MA)
+		if num < 1: continue
+		for i in range(num):
+			avg += times[i] - times[i+1]
+		avg /= num
+		plant_freqs[p] = avg
+	return plant_freqs
 
 def secToTimeString(t, whole=False):
 	# only converts to days or months
 	days = t / 86400
 	if whole:
 		days = int(days + 0.5)
-		if days < 0:
-			timestr = "Overdue"
-		elif days < 1:
-			timestr = "Today"
-		elif days < 2:
-			timestr = "1 day"
+		if days < 1:
+			timestr = "N/A"
+		elif days == 1:
+			timestr = "Daily"
 		elif days < 7:
 			timestr = "%d days" % days
 		elif days <= 28:
@@ -134,9 +166,9 @@ def secToTimeString(t, whole=False):
 			timestr = "%d mon" % (days/30+0.5)
 	else:
 		if days <= 28:
-			timestr = "%.2f d" % days
+			timestr = "%d d" % (days+0.5)
 		else:
-			timestr = "%.2f M" % (days / 30)
+			timestr = "%d w" % (days / 7+0.5)
 	return timestr
 
 if __name__ == "__main__":
