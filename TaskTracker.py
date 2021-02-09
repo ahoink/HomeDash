@@ -2,10 +2,10 @@ import time
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, timedelta
 
 MAX_SCORE = 1.5
-WMA_INT = 7
+WMA_INT = 10
 
 class TaskTracker():
 	def __init__(self):
@@ -43,11 +43,11 @@ class TaskTracker():
 	def getProductivity(self):
 		data = readStats()
 		task_data = readData()
-		prod,temp1,temp2 = processStatsData(data, task_data)
+		prod = processStatsData(data, task_data, retDaily=False)
 		# adjust prod score for any overdue tasks
 		for t in self.tasks:
 			if t[-1] > 1.0:
-				prod.append((normalizeScore(t[-1]) * t[3], t[3]))
+				prod.append((normalizeScore(t[-1]) * t[4], t[4]))
 		curr_prod_val = sum([p[0] for p in prod[-WMA_INT:]]) / sum([p[1] for p in prod[-WMA_INT:]])
 		if curr_prod_val < 80:
 			r = "E0"
@@ -131,22 +131,32 @@ class TaskTracker():
 		return "sall good"
 
 def readData():
-	tasks = []
+	tasks = {}
+	data = []
 	with open("data/tasks.csv", 'r') as f:
-		tasks = f.readlines()
-	tasks = tasks[1:]
-	tasks = [t.replace("\n","").split(',') for t in tasks]
-	for i in range(len(tasks)):
-		tasks[i][1] = int(tasks[i][1]) # last completed timestamp
-		tasks[i][2] = int(tasks[i][2]) # frequency
-		tasks[i][3] = int(tasks[i][3]) # weight
-	return tasks
+		data = f.readlines()
+	data = data[1:]
+	data = [t.replace("\n","").split(',') for t in data]
+	for i in range(len(data)):
+		#name = data[i][0]
+		#tasks[name] = {
+		#				"last": int(data[i][1]),
+		#				"freq": int(data[i][2]),
+		#				"timecost": int(data[i][3]),
+		#				"weight": int(data[i][4])
+		#				}
+		
+		data[i][1] = int(data[i][1]) # last completed timestamp
+		data[i][2] = int(data[i][2]) # frequency
+		data[i][3] = int(data[i][3]) # time cost
+		data[i][4] = int(data[i][4]) # weight
+	return data
 
 def saveData(data):
 	with open("data/tasks.csv", 'w') as f:
-		f.write("task,last_completed,frequency,weight\n")
+		f.write("task,last_completed,frequency,timecost,weight\n")
 		for t in data:
-			f.write("%s,%d,%d,%d\n" % (t[0], t[1], t[2], t[3]))
+			f.write("%s,%d,%d,%d,%d\n" % (t[0], t[1], t[2], t[3], t[4]))
 
 def readStats():
 	data = []
@@ -175,14 +185,20 @@ def remLastStatEntry():
 def normalizeScore(score):
 	return 100 * (1 - min(1, max(0, score-1)))	
 
-def processStatsData(data, tasks):
+
+def processStatsData(data, tasks, retDaily=True):
 	productivity = []
+	daily_prod = []
+	completed = []
 	tot_score = 0.0
+	curr_date = datetime.fromtimestamp(time.time())
 	task_stats = {}
 	days_stats = {}
 	weights = {}
+	time_cost = {}
 	for t in tasks:
-		weights[t[0]] = t[3]
+		weights[t[0]] = t[4]
+		time_cost[t[0]] = t[3]
 	for i in range(len(data)):
 		task_name = data[i][0]
 		task_completed = data[i][1]
@@ -192,13 +208,20 @@ def processStatsData(data, tasks):
 		if task_name not in weights: 
 			#print(task_name)
 			continue
+		if task_name not in completed:
+			completed.append(task_name)
 
 		day = time.strftime("%A", time.localtime(task_completed))
+		dt = datetime.fromtimestamp(task_completed)
 		prod_score = normalizeScore(task_score)
-		productivity.append((prod_score*weights[task_name], weights[task_name]))
+		#productivity.append((prod_score * weights[task_name], weights[task_name]))
 		# increment number for tasks performed on this day
-		days_stats[day] = days_stats.get(day, 0) + weights[task_name]
-		days_stats["tot"] = days_stats.get("tot", 0) + weights[task_name]
+		days_stats[day] = days_stats.get(day, 0) + time_cost[task_name]
+		days_stats["tot"] = days_stats.get("tot", 0) + time_cost[task_name]
+
+		sublist = [x for x in tasks if x[0] == task_name][0]
+		idx = tasks.index(sublist)
+		tasks[idx][1] = task_completed
 
 		# keep track of which days each tasks gets completed, num times completed, and total score
 		temp = task_stats.get(task_name, {"days":[], "completed":0, "score":0, "freq":0})
@@ -207,8 +230,32 @@ def processStatsData(data, tasks):
 		temp["score"] += task_score
 		temp["freq"] = task_freq
 		task_stats[task_name] = temp
+		
+		# need at least WMA_INT elements before calculating weight moving average
+		if len(productivity) < WMA_INT:
+			productivity.append((prod_score * weights[task_name], weights[task_name]))
+			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
+		# fill in gaps in daily productivity
+		else:
+			while dt > curr_date:
+				ts = datetime.timestamp(curr_date)
+				temp_prod = productivity[-WMA_INT:]
+				# account for overdue tasks
+				for t in tasks:
+					if t[0] not in completed: continue
+					temp_score = (ts - t[1]) / t[2]
+					if temp_score > 1.0:
+						temp_prod.append((normalizeScore(temp_score) * weights[t[0]], weights[t[0]]))
+				# calc weighted average productivity score
+				daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
+				daily_prod.append((ts, daily_score))
+				curr_date += timedelta(days=1)
+			productivity.append((prod_score * weights[task_name], weights[task_name]))
 
-	return productivity, days_stats, task_stats
+	if retDaily:
+		return daily_prod, days_stats, task_stats
+	else:
+		return productivity
 
 def plotStats():
 	stat_data = readStats()
@@ -227,9 +274,19 @@ def plotStats():
 	#	ma.append(ema)
 	
 	# sma
-	for i in range(WMA_INT, len(productivity)+1):
-		last5avg = sum([p[0] for p in productivity[i-WMA_INT:i]]) / sum([p[1] for p in productivity[i-WMA_INT:i]])
-		ma.append(last5avg)
+	#for i in range(WMA_INT, len(productivity)+1):
+	#	last5avg = sum([p[0] for p in productivity[i-WMA_INT:i]]) / sum([p[1] for p in productivity[i-WMA_INT:i]])
+	#	ma.append(last5avg)
+	ma = [p[1] for p in productivity]
+
+	# create xtick points and labels for the start of each month
+	xticks = []
+	xlabels = []
+	for i in range(len(productivity)):
+		dt = datetime.fromtimestamp(productivity[i][0])
+		if dt.day == 1:
+			xticks.append(i)
+			xlabels.append(dt.strftime("%b"))
 
 	# percentage of tasks performed on each day
 	day_percents = []
@@ -243,8 +300,14 @@ def plotStats():
 	axes[1].bar(range(7), day_percents)
 	plt.sca(axes[0])
 	plt.title("%d-Task Weighted Moving Average" % WMA_INT)
+	plt.xticks(xticks, xlabels)
+	plt.grid(True, "major", "x", linestyle="--", linewidth=1)
 	plt.sca(axes[1])
+	plt.title("Distribution of Time Spent on Tasks")
+	plt.ylabel("%")
 	plt.xticks(range(7), [d[:3] for d in day_names])
+
+	fig.tight_layout()
 	return fig, getStatsAvgBreakdown(task_stats)
 
 def getStatsAvgBreakdown(task_stats=None, sorting=0):
