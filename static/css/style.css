@@ -16,35 +16,6 @@ table.stylized tbody td {
   font-size: 20px;
   color: #FFFFFF;
 }
-table.stylized thead {
-  background: #DADFF0;
-  border-bottom: 10px solid #FFFFFF;
-}
-table.stylized thead th {
-  font-size: 24px;
-  font-weight: bold;
-  background: #DADFF0;
-  color: #343434;
-  text-align: center;
-  border-left: 2px solid #FFFFFF;
-}
-table.stylized thead th:first-child {
-  border-left: none;
-}
-
-table.stylized tfoot td {
-  font-size: 13px;
-}
-table.stylized tfoot .links {
-  text-align: right;
-}
-table.stylized tfoot .links a{
-  display: inline-block;
-  background: #FFFFFF;
-  color: #398AA4;
-  padding: 2px 8px;
-  border-radius: 5px;
-}
 
 table.simple {
   font-family: Arial;
@@ -77,7 +48,7 @@ button.stylized, input[type=submit] {
 	box-shadow:inset 0px 1px 0px 0px #7a8eb9;
 	background-color:#7080C0;
 	border:1px solid #314159;
-	display:inline-block;
+	display:block;
 	cursor:pointer;
 	color:#ffffff;
 	font-family:Verdana;

@@ -183,7 +183,10 @@ def postData():
 	print(cmd, cmdType)
 	if cmd == "ADD":
 		if cmdType == "Task":
-			res = task_proc.addTask(request.form["tname"], request.form["tfreq"], int(request.form["twt"]))
+			res = task_proc.addTask(request.form["tname"],
+									request.form["tfreq"],
+									int(request.form["tcost"]), 
+									int(request.form["twt"]))
 		elif cmdType == "Expense":
 			autopay = "autopay" in request.form
 			isvar = "isvar" in request.form

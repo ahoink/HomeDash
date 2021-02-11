@@ -75,7 +75,7 @@ class TaskTracker():
 			return "#FF8080"
 		return "#%s%s%s" % (r, g, b)
 
-	def addTask(self, name, freq, wt):
+	def addTask(self, name, freq, cost, wt):
 		if not name or name in [n[0] for n in self.tasks]:
 			return "Invalid Name"
 		if not freq:
@@ -100,7 +100,7 @@ class TaskTracker():
 
 		# save the current state and add the new task with last completed time as now
 		self.prev_state = [[x for x in y] for y in self.tasks]
-		self.tasks.append([name, time.time(), freq, wt])
+		self.tasks.append([name, time.time(), freq, cost, wt])
 		saveData(self.tasks)
 		return "sall good"
 	

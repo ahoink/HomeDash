@@ -87,6 +87,7 @@ function submitNewTask()
 				alert("Successfully added task");
 				document.getElementById("tname").value="";
 				document.getElementById("tfreq").value="";
+				document.getElementById("tcost").value="";
 				document.getElementById("twt").value="";
 				perUpdate();
 			}
