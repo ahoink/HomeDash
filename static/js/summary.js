@@ -9,16 +9,23 @@ function setTextFromData(selector, data)
 function setHostStatus(data)
 {
 	const hosts = Object.keys(data);
+	var str = "";
 	for (var i = 0; i < hosts.length; i++) {
-		var statusCircle = document.getElementById("st_host" + String(i+1)); 
-		document.getElementById("txt_host" + String(i+1)).innerHTML = hosts[i];
+		var color = "#E0E000";
 		if (data[hosts[i]]) {
-			statusCircle.style.backgroundColor = "#40E000";
+			color = "#40E000";
 		}
 		else {
-		statusCircle.style.backgroundColor = "#E04000";	
+			color = "#E04000";
 		}
+		str += '<span class="status_circle" style="background-color: '
+			+ color
+			+ '"></span>'
+			+ '<pre class="status_host">'
+			+ hosts[i]
+			+ '</pre>';
 	}
+	$("#lan_hosts").html(str);
 }
 
 function setWeatherInfo(data)
@@ -89,7 +96,7 @@ function Headers(list, selector)
 		}
 	}
 	$(selector).append(header);
-		return columns;
+	return columns;
 }
 
 // Handle clicking a row in the Table
@@ -134,7 +141,6 @@ function perUpdate()
 		setTextFromData('prod_val', data["prod"]);
 		setTextFromData('exp_val', data["exp"]);
 		constructTable('#table', data["tasks"], "Tasks");
-		//setHostStatus(data["ping"]);
 		setWeatherInfo(data["weather"]);
 	});
 }

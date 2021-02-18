@@ -26,12 +26,7 @@
 	
 	<hr>
 	<pre id="lan_status"><b><u>LAN Status</u></b></pre>
-	<span class="status_circle" id="st_host1"></span>
-	<pre class"status_host" id="txt_host1">host1</pre>
-	<span class="status_circle" id="st_host2"></span>
-	<pre class"status_host" id="txt_host2">host2</pre>
-	<span class="status_circle" id="st_host3"></span>
-	<pre class"status_host" id="txt_host3">host3</pre>
+	<div id="lan_hosts">Loading...</div>
 	<hr>
 	<pre id="weather"><b><u>Weather</u></b></pre>
 	<i id="currentIcon" style="font-size: 25px;"></i>
@@ -55,8 +50,6 @@
 			<td>72F</td>
 		</tr>
 		<tr>
-	<!-- <pre id="hourlyTime"><u>0 1 2 3 4 5</u></pre>
-	<pre id="hourly">72F 72F 72F 72F 72F 72F</pre> -->
 			<td><i id="icon_hr1"></i></td>
 			<td><i id="icon_hr2"></i></td>
 			<td><i id="icon_hr3"></i></td>
@@ -75,11 +68,9 @@
 		constructTable('#table', data["tasks"], "Tasks");
 		constructTable('#table2', data["expenses"], "Expenses");
 
-		//setHostStatus(data["ping"]);
-
 		setWeatherInfo(data["weather"])
 		
-document.getElementById('sunlight').innerHTML = "<b>Sunlight at back window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
+		document.getElementById('sunlight').innerHTML = "<b>Sunlight at back window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
 		checkLAN();
 
 		this.setInterval(perUpdate, 3600000) // Update summary every hour
