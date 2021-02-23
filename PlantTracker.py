@@ -10,20 +10,22 @@ class PlantTracker():
 		self.freqs = getFreqs()
 		self.prev_state = [[x for x in y] for y in self.plants]
 		self.init = False
+		self.scorePlants()
 	
 	def scorePlants(self):
 		# score is the ratio of time since last completed over expected frequency (with a max cap)
 		tnow = time.time()
 		for i in range(len(self.plants)):
-			t = self.plants[i]
-			score = (tnow - self.plants[i][1]) / self.plants[i][2]
+			p = self.plants[i]
+			freq = self.freqs.get(p[0], 0)
+			score = (tnow - p[1]) / freq if freq > 0 else 1
 			# Data file doesn't include score, so it may not exist yet if file was just read
 			if not self.init: self.plants[i].append(score)
 			else: self.plants[i][-1] = score
 		self.init = True
 
 	def getPlantList(self):
-		#self.scorePlants()
+		self.scorePlants()
 		plnts = []
 		hdrs = ["Plant", "Last Watered", "Frequency"]
 		sorted_plants = sorted(self.plants, key=lambda x: x[0], reverse=True) # sort by name
@@ -37,7 +39,6 @@ class PlantTracker():
 		return {"Headers":hdrs, "Plants":plnts}
 
 	def getColorFromScore(self, score):
-		return "#64E064"		
 
 		# generate hex string of color based on the score (lowest RGB value is 128 so the color is lighter and softer)
 		# Start as green and fade to yellow as score approaches half of the max score
