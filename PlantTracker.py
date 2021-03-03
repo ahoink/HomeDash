@@ -61,12 +61,12 @@ class PlantTracker():
 
 		# save the current state and add the new plant with last completed time as now
 		self.prev_state = [[x for x in y] for y in self.plants]
-		self.plants.append([name, time.time()])
+		self.plants.append([name, int(time.time()), 1])
 		saveData(self.plants)
 		return "sall good"
 	
 	def updatePlant(self, plant_name):
-		tnow = time.time()
+		tnow = int(time.time())
 		# get sublist from plant list where name matches plant_name and get the index of that sublist
 		sublist = [x for x in self.plants if x[0] == plant_name][0]
 		idx = self.plants.index(sublist)
