@@ -251,6 +251,20 @@ def processStatsData(data, tasks, retDaily=True):
 				daily_prod.append((ts, daily_score))
 				curr_date += timedelta(days=1)
 			productivity.append((prod_score * weights[task_name], weights[task_name]))
+			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
+
+	# get daily score for today
+	ts = datetime.timestamp(dt)
+	temp_prod = productivity[-WMA_INT:]
+	# account for overdue tasks
+	for t in tasks:
+		if t[0] not in completed: continue
+		temp_score = (ts - t[1]) / t[2]
+		if temp_score > 1.0:
+			temp_prod.append((normalizeScore(temp_score) * weights[t[0]], weights[t[0]]))
+	# calc weighted average productivity score
+	daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
+	daily_prod.append((ts, daily_score))
 
 	if retDaily:
 		return daily_prod, days_stats, task_stats
@@ -261,7 +275,6 @@ def plotStats():
 	stat_data = readStats()
 	task_data = readData()
 	productivity, days_stats, task_stats = processStatsData(stat_data, task_data)
-
 	ma = []
 	dys = 7
 	#wt = 2/(dys+1)
@@ -315,7 +328,6 @@ def getStatsAvgBreakdown(task_stats=None, sorting=0):
 		data = readStats()
 		task_data = readData()
 		productivity, days_stats, task_stats = processStatsData(data, task_data)
-
 	# create javascript-friendly dict (to be read as JSON)
 	avg_stats = []
 	hdrs = ["Task", "Avg Score", "Most Frequent Day", "Avg Frequency"]
