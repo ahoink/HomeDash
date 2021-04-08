@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import copy
 
 MAX_SCORE = 1.5
 WMA_INT = 10
@@ -10,31 +11,34 @@ WMA_INT = 10
 class TaskTracker():
 	def __init__(self):
 		self.tasks = readData()
-		self.prev_state = [[x for x in y] for y in self.tasks]
+		self.prev_state = copy.deepcopy(self.tasks)
 		self.init = False
 	
 	def scoreTasks(self):
 		# score is the ratio of time since last completed over expected frequency (with a max cap)
 		tnow = time.time()
-		for i in range(len(self.tasks)):
-			t = self.tasks[i]
-			score = (tnow - self.tasks[i][1]) / self.tasks[i][2]
-			# Data file doesn't include score, so it may not exist yet if file was just read
-			if not self.init: self.tasks[i].append(score)
-			else: self.tasks[i][-1] = score
+		for t in self.tasks:
+			task = self.tasks[t]
+			score = (tnow - task["last"]) / task["freq"]
+			if not task["isActive"]:
+				score = 0.0
+			task["score"] = score
 		self.init = True
 
 	def getTaskList(self, todayOnly=False):
 		self.scoreTasks()
 		tsks = []
 		hdrs = ["Task", "Last", "Due"]
-		sorted_tasks = sorted(self.tasks, key=lambda x: x[-1], reverse=True) # sort in order of score (high to low)
+		sorted_tasks = sorted(self.tasks.keys(), key=lambda x: self.tasks[x]["score"], reverse=True) # sort in order of score (high to low)
 		for t in sorted_tasks:
+			task = self.tasks[t]
 			temp = {}
-			temp[hdrs[0]] = t[0] 											# Task name
-			temp[hdrs[1]] = time.strftime("%b %d", time.localtime(t[1]))	# Last completed (Month Date)
-			temp[hdrs[2]] = secToTimeString(t[2]-t[-1]*t[2], whole=True) #"%.2f" % t[3]									# score
-			temp["Color"] = self.getColorFromScore(t[-1])					# Color hex code
+			temp[hdrs[0]] = t														# Task name
+			temp[hdrs[1]] = time.strftime("%b %d", time.localtime(task["last"]))	# Last completed (Month Date)
+			temp[hdrs[2]] = secToTimeString(task["freq"]-task["score"]*task["freq"], whole=True)			# Due
+			temp["Color"] = self.getColorFromScore(task["score"])					# Color hex code
+			if not task["isActive"]:
+				temp["Due"] = "N/A"
 			if todayOnly and temp["Due"] != "Today" and temp["Due"] != "Overdue":
 				continue
 			tsks.append(temp)	
@@ -46,8 +50,9 @@ class TaskTracker():
 		prod = processStatsData(data, task_data, retDaily=False)
 		# adjust prod score for any overdue tasks
 		for t in self.tasks:
-			if t[-1] > 1.0:
-				prod.append((normalizeScore(t[-1]) * t[4], t[4]))
+			task = self.tasks[t]
+			if task["score"] > 1.0:
+				prod.append((normalizeScore(task["score"]) * task["weight"], task["weight"]))
 		curr_prod_val = sum([p[0] for p in prod[-WMA_INT:]]) / sum([p[1] for p in prod[-WMA_INT:]])
 		if curr_prod_val < 80:
 			r = "E0"
@@ -76,7 +81,7 @@ class TaskTracker():
 		return "#%s%s%s" % (r, g, b)
 
 	def addTask(self, name, freq, cost, wt):
-		if not name or name in [n[0] for n in self.tasks]:
+		if not name or name in self.tasks:
 			return "Invalid Name"
 		if not freq:
 			return "Invalid Frequency"
@@ -99,34 +104,40 @@ class TaskTracker():
 				return "Invalid Frequency"
 
 		# save the current state and add the new task with last completed time as now
-		self.prev_state = [[x for x in y] for y in self.tasks]
-		self.tasks.append([name, time.time(), freq, cost, wt])
+		self.prev_state = copy.deepcopy(self.tasks)
+		self.tasks[name] = {
+			"last": time.time(),
+			"freq": freq,
+			"timecost": cost,
+			"weight": wt,
+			"isActive": 1
+		}
 		saveData(self.tasks)
 		return "sall good"
 	
 	def updateTask(self, task_name):
 		tnow = time.time()
 		# get sublist from task list where name matches task_name and get the index of that sublist
-		sublist = [x for x in self.tasks if x[0] == task_name][0]
-		idx = self.tasks.index(sublist)
+		#sublist = [x for x in self.tasks if x[0] == task_name][0]
+		#idx = self.tasks.index(sublist)
 
 		# save the current state before updating
-		self.prev_state = [[x for x in y] for y in self.tasks]
+		self.prev_state = copy.deepcopy(self.tasks)
 
 		# save the task and score upon completion to the stats file
-		saveStats(sublist, tnow)
+		saveStats(task_name, self.tasks[task_name], tnow)
 
 		# update task last completed time and save to file
-		self.tasks[idx][1] = tnow
+		self.tasks[task_name]["last"] = tnow
 		saveData(self.tasks)
 
 		resp = [time.strftime("%b %d", time.localtime(tnow)), "DONE"]
 		return resp
 
 	def revertPrevState(self):
-		if len(self.tasks) == len(self.prev_state):
+		if len(self.tasks.keys()) == len(self.prev_state.keys()):
 			remLastStatEntry()
-		self.tasks = [[x for x in y] for y in self.prev_state]
+		self.tasks = copy.deepcopy(self.prev_state)
 		saveData(self.tasks)
 		return "sall good"
 
@@ -138,25 +149,29 @@ def readData():
 	data = data[1:]
 	data = [t.replace("\n","").split(',') for t in data]
 	for i in range(len(data)):
-		#name = data[i][0]
-		#tasks[name] = {
-		#				"last": int(data[i][1]),
-		#				"freq": int(data[i][2]),
-		#				"timecost": int(data[i][3]),
-		#				"weight": int(data[i][4])
-		#				}
+		name = data[i][0]
+		tasks[name] = {
+			"last": int(data[i][1]),
+			"freq": int(data[i][2]),
+			"timecost": int(data[i][3]),
+			"weight": int(data[i][4]),
+			"isActive": int(data[i][5])
+		}
 		
-		data[i][1] = int(data[i][1]) # last completed timestamp
-		data[i][2] = int(data[i][2]) # frequency
-		data[i][3] = int(data[i][3]) # time cost
-		data[i][4] = int(data[i][4]) # weight
-	return data
+		#data[i][1] = int(data[i][1]) # last completed timestamp
+		#data[i][2] = int(data[i][2]) # frequency
+		#data[i][3] = int(data[i][3]) # time cost
+		#data[i][4] = int(data[i][4]) # weight
+		#data[i][5] = int(data[i][5]) # active
+	return tasks#data
 
 def saveData(data):
 	with open("data/tasks.csv", 'w') as f:
-		f.write("task,last_completed,frequency,timecost,weight\n")
+		f.write("task,last_completed,frequency,timecost,weight,active\n")
 		for t in data:
-			f.write("%s,%d,%d,%d,%d\n" % (t[0], t[1], t[2], t[3], t[4]))
+			f.write("%s,%d,%d,%d,%d,%d\n" % 
+			(t, data[t]["last"], data[t]["freq"], data[t]["timecost"], data[t]["weight"], data[t]["isActive"]))
+			#(t[0], t[1], t[2], t[3], t[4], t[5]))
 
 def readStats():
 	data = []
@@ -169,9 +184,9 @@ def readStats():
 		data[i][3] = float(data[i][3]) # score
 	return data
 
-def saveStats(data, t):
+def saveStats(task, data, t):
 	with open("data/stats.csv", "a") as f:
-		f.write("%s,%d,%d,%f\n" % (data[0], t, data[2], data[-1]))
+		f.write("%s,%d,%d,%f\n" % (task, t, data["freq"], data["score"]))
 
 def remLastStatEntry():
 	data = []
@@ -197,8 +212,8 @@ def processStatsData(data, tasks, retDaily=True):
 	weights = {}
 	time_cost = {}
 	for t in tasks:
-		weights[t[0]] = t[4]
-		time_cost[t[0]] = t[3]
+		weights[t] = tasks[t]["weight"]
+		time_cost[t] = tasks[t]["timecost"]
 	for i in range(len(data)):
 		task_name = data[i][0]
 		task_completed = data[i][1]
@@ -206,7 +221,6 @@ def processStatsData(data, tasks, retDaily=True):
 		task_score = data[i][3]
 
 		if task_name not in weights: 
-			#print(task_name)
 			continue
 		if task_name not in completed:
 			completed.append(task_name)
@@ -219,9 +233,7 @@ def processStatsData(data, tasks, retDaily=True):
 		days_stats[day] = days_stats.get(day, 0) + time_cost[task_name]
 		days_stats["tot"] = days_stats.get("tot", 0) + time_cost[task_name]
 
-		sublist = [x for x in tasks if x[0] == task_name][0]
-		idx = tasks.index(sublist)
-		tasks[idx][1] = task_completed
+		tasks[task_name]["last"] = task_completed
 
 		# keep track of which days each tasks gets completed, num times completed, and total score
 		temp = task_stats.get(task_name, {"days":[], "completed":0, "score":0, "freq":0})
@@ -242,10 +254,10 @@ def processStatsData(data, tasks, retDaily=True):
 				temp_prod = productivity[-WMA_INT:]
 				# account for overdue tasks
 				for t in tasks:
-					if t[0] not in completed: continue
-					temp_score = (ts - t[1]) / t[2]
+					if t not in completed: continue
+					temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
 					if temp_score > 1.0:
-						temp_prod.append((normalizeScore(temp_score) * weights[t[0]], weights[t[0]]))
+						temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
 				# calc weighted average productivity score
 				daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
 				daily_prod.append((ts, daily_score))
@@ -258,10 +270,10 @@ def processStatsData(data, tasks, retDaily=True):
 	temp_prod = productivity[-WMA_INT:]
 	# account for overdue tasks
 	for t in tasks:
-		if t[0] not in completed: continue
-		temp_score = (ts - t[1]) / t[2]
+		if t not in completed: continue
+		temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
 		if temp_score > 1.0:
-			temp_prod.append((normalizeScore(temp_score) * weights[t[0]], weights[t[0]]))
+			temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
 	# calc weighted average productivity score
 	daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
 	daily_prod.append((ts, daily_score))
