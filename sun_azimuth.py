@@ -5,6 +5,8 @@ g_lat = 28.385
 g_lon = -81.564
 tz_offset = -4 if time.localtime().tm_isdst else -5# timezone (UTC difference)
 window_angle = 288 # angle in degrees of a window, clockwise from North (0 or 360)
+g_min_elev = 10
+g_max_elev = 36
 
 def getSunAngle(year, month, day, hour, minute, lat, lon):
     # magic numbers EVERYWHERE
@@ -84,10 +86,10 @@ def getSunAngle(year, month, day, hour, minute, lat, lon):
     else:
         solar_azimuth_angle = (540 - solar_azimuth_angle) % 360
         
-    if corrected_solar_elev <= 0: return 0 # sun is below horizon, so don't care about position
-    return solar_azimuth_angle
+    if corrected_solar_elev <= 0: return 0, 0 # sun is below horizon, so don't care about position
+    return solar_azimuth_angle, solar_elev_angle
 
-def getSunlightTimes(lat, lon, angle):
+def getSunlightTimes(lat, lon, angle, min_elev=0, max_elev=90):
     lower_lim = angle - 65 # adjustments for obstructions to window
     upper_lim = angle + 65
 
@@ -102,22 +104,22 @@ def getSunlightTimes(lat, lon, angle):
 
     # start at midnight, increase time by 1 minute each loop to find when sunlight
     # is expected to first enters window and when near-direct sunlight starts
-    azimuth = getSunAngle(year, month, day, hour, minute, lat, lon)
-    while azimuth < lower_lim:
+    azimuth, elev = getSunAngle(year, month, day, hour, minute, lat, lon)
+    while azimuth < lower_lim or elev > max_elev:
         minute += 1
         if minute >= 60:
             minute = 0
             hour += 1
-        azimuth = getSunAngle(year, month, day, hour, minute, lat, lon)
+        azimuth, elev = getSunAngle(year, month, day, hour, minute, lat, lon)
     nearDirectStart = "%02d:%02d" % (hour, minute)
 
     # find upper limit of "near-direct" sunlight
-    while azimuth < upper_lim and azimuth != 0: # azimuth = 0 means sun has set
+    while azimuth < upper_lim and azimuth != 0 and elev > min_elev: # azimuth = 0 means sun has set
         minute += 1
         if minute >= 60:
             minute = 0
             hour += 1
-        azimuth = getSunAngle(year, month, day, hour, minute, lat, lon)
+        azimuth, elev = getSunAngle(year, month, day, hour, minute, lat, lon)
     nearDirectEnd = "%02d:%02d" % (hour, minute)
 
     return nearDirectStart, nearDirectEnd
@@ -135,8 +137,8 @@ if __name__ == "__main__":
     hour = int(today[3])
     minute = int(today[4])
     strTime = "%02d:%02d" % (hour, minute)
-    azimuth = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
-    print("It is %s, Sun azimuth is currently %.2f deg" % (strTime, azimuth))
+    azimuth, elev = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
+    print("It is %s, Sun azimuth is currently %.2f deg (%.2f deg from horizon)" % (strTime, azimuth, elev))
 
     # find time with "near-direct" sunlight
     light_start = ""    # sunlight first enters window (at quite an angle)
@@ -145,25 +147,25 @@ if __name__ == "__main__":
 
     # start at midnight, increase time by 1 minute each loop to find when sunlight
     # is expected to first enters window and when near-direct sunlight starts
-    azimuth = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
-    while azimuth < lower_lim:
+    azimuth, elev = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
+    while azimuth < lower_lim or elev > g_max_elev:
         minute += 1
         if minute >= 60:
             minute = 0
             hour += 1
-        azimuth = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
+        azimuth, elev = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
         if light_start == "" and azimuth > window_angle - 90 + 9:
             light_start = "%02d:%02d" % (hour, minute)
             print("Sunlight will first enter window at %s" % light_start)
     nearDirectStart = "%02d:%02d" % (hour, minute)
 
     # find upper limit of "near-direct" sunlight
-    while azimuth < upper_lim and azimuth != 0: # azimuth = 0 means sun has set
+    while azimuth < upper_lim and azimuth != 0 and elev > g_min_elev: # azimuth = 0 means sun has set
         minute += 1
         if minute >= 60:
             minute = 0
             hour += 1
-        azimuth = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
+        azimuth, elev = getSunAngle(year, month, day, hour, minute, g_lat, g_lon)
     nearDirectEnd = "%02d:%02d" % (hour, minute)
     
     print("Sun will give near-direct light from %s to %s" % (nearDirectStart, nearDirectEnd))
