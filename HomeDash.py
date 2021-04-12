@@ -12,11 +12,13 @@ import sun_azimuth
 import NetworkTracker
 import PlantTracker
 import Weather
+import CoinTracker
 
 app = Flask(__name__)
 task_proc = TaskTracker.TaskTracker()
 exp_proc = ExpenseTracker.ExpenseTracker()
 plant_proc = PlantTracker.PlantTracker()
+coin_proc = CoinTracker.CoinTracker()
 
 # HELPER FUNCTIONS
 def readConfig():
@@ -86,7 +88,9 @@ def getHomeData(update=False):
 	lat = config["lat"]
 	lon = config["lon"]
 	angle = config["angle"]
-	start,end = sun_azimuth.getSunlightTimes(lat, lon, angle)
+	min_elev = 10 #config["min_elev"]
+	max_elev = 36 #config["max_elev"]
+	start,end = sun_azimuth.getSunlightTimes(lat, lon, angle, min_elev, max_elev)
 
 	# get weather data
 	wdata = Weather.formatWeatherData(Weather.getCurrentWeather(lat, lon, config["OWM_KEY"]))
@@ -138,6 +142,24 @@ def expensePage():
 def plantsPage():
 	data = plant_proc.getPlantList()
 	return render_template("plants.html", data=data)
+
+@app.route("/videos")
+def videosPage():
+	return render_template("videos.html")
+
+@app.route("/coins")
+def coinsPage():
+	fig, fig2 = CoinTracker.GetPlots()
+	output = io.BytesIO()
+	FigureCanvas(fig).print_png(output)
+	imagestr = "data:image/png;base64,"
+	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
+
+	output = io.BytesIO()
+	FigureCanvas(fig2).print_png(output)
+	imagestr2 = "data:image/png;base64,"
+	imagestr2 += base64.b64encode(output.getvalue()).decode("utf8")
+	return render_template("coins.html", image=imagestr, image2=imagestr2)
 
 @app.route('/favicon.ico')
 def favicon():
@@ -197,6 +219,8 @@ def postData():
 										isvar)
 		elif cmdType == "Plant":
 			res = plant_proc.addPlant(request.form["pname"])
+		elif cmdType == "Coin":
+			res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "UNDO":
@@ -205,7 +229,7 @@ def postData():
 		elif cmdType == "Expense":
 			res = exp_proc.revertPrevState()
 		elif cmdType == "Plant":
-			res = plant_proc.revertPrevState()
+			res = plant_proc.revertPrevState()	
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "UPDATE":
@@ -220,6 +244,8 @@ def postData():
 		elif cmdType == "Plant":
 			plant_name = request.form["plant"]
 			res = plant_proc.updatePlant(plant_name)
+		elif cmdType == "Coin":
+			res = coin_proc.saveData()
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	return json.dumps(res)
