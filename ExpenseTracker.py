@@ -218,12 +218,17 @@ def plotStats():
 		if next_month > 12: next_month = 1
 		months.append(next_month)
 		vals.append(0)
+	avg_monthly = sum(vals[:-1]) / (len(vals) - 1)
+
 	fig = plt.figure()
 	plt.bar(range(len(vals)), vals)
 	plt.xticks(range(len(vals)), [month_str[int(x)] for x in months])
 	for i,v in enumerate(vals):
 		if v == 0: continue	
-		plt.text(i-0.4, v+15, "$%.2f" % v)
+		plt.text(i-0.4, v+15, "$%d" % (v+0.5))
+	plt.plot([-1, len(vals)], [avg_monthly, avg_monthly], color="red", linestyle="--", linewidth=0.5)
+	plt.xlim((-0.5, len(vals)-0.5))
+	plt.text(-1.3, avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
 
 	return fig, js_stats
 
