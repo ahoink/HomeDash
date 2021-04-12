@@ -1,3 +1,4 @@
+/* main table style */
 table.stylized {
   font-family: Tahoma, Geneva, sans-serif;
   background-color: #DADFF0;
@@ -80,31 +81,45 @@ label {
 }
 
 /* navigation bar */
-ul {
+.topnav {
 	list-style-type: none;
 	margin: 0 0 10 0;
 	padding: 0;
 	overflow: hidden;
-	background-color: #7080c0;
+	background-color: #405090;
+	position: relative;
 }
 
-li {
+.topnav #navlinks {
+	display: none;
+}
+
+/*li {
 	float: left;
  	border-right: 1px solid #FFFFFF;
-}
+}*/
 
-li a {
+.topnav a {
  	font-family: Tahoma, Geneva, sans-serif;
 	display: block;
 	color: white;
-	text-align: center;
+	text-align: left;
 	padding: 14px 16px;
 	text-decoration: none;
 }
 
-.active {
-	background-color: #405090;
+.topnav a.icon {
+  background: #7080c0;
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
+
+.active {
+	background-color: #7080c0;
+}
+
 
 
 /* Loading indicator */
@@ -147,9 +162,9 @@ li a {
 }
 
 #prod_val {
-	position: absolute;
-	left: 45px;
-	top: 80px;
+	position: relative;
+	left: 40px;
+	top: -65px;
 	margin-top: 28px;
 	font-family: Tahoma, Geneva, sans-serif;
 	font-size: 20pt;
@@ -158,9 +173,9 @@ li a {
 #expenses {
 	height: 70px;
 	width: 195px;
-	position: absolute;
+	position: relative;
 	left: 145px;
-	top: 58px;
+	top: -146px;
 	font-family: Tahoma, Geneva, sans-serif;
 	font-size: 10pt;
 	color: #405090;
@@ -169,12 +184,12 @@ li a {
 }
 
 #exp_val {
-	position:absolute;
+	position:relative;
 	left: 200px;
-	top: 80px;
+	top: -223px;
 	font-family: Tahoma, Geneva, sans-serif;
 	font-size: 20pt;
-	padding-bottom: 20px;
+	margin-bottom: -200px;
 }
 
 #due_today {

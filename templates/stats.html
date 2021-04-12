@@ -3,21 +3,30 @@
     <title>Productivity Stats</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
   </head>
   <body>
-	<ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/tasks">Tasks</a></li>
+	<div class="topnav">
         <li><a class="active" href="/stats">Stats</a></li>
-		<li><a href="/expenses">Expenses</a></li>
-		<li><a href="/plants">Plants</a></li>
-    </ul>
+        <div id="navlinks">
+			<li><a href="/">Home</a></li>
+            <li><a href="/tasks">Tasks</a></li>
+            <li><a href="/expenses">Expenses</a></li>
+            <li><a href="/plants">Plants</a></li>
+            <li><a href="/videos">Videos</a></li>
+            <li><a href="/coins">Coins</a></li>
+        </div>
+        <a href="javascript:void(0);" class="icon" onclick="hamburger()">
+            <i class="fa fa-bars"></i>
+        </a>
+    </div>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="productivity plot">
 	<!--<textarea id="ts_output" rows=12 cols=25 readonly>Task Stats</textarea>-->
 	<pre id="txtarea"><b>Task Stats</b></pre>
 	<table align="left" id="table" border="1" onClick="handleClick(event);"></table>
 	<script src="static/js/stats.js"></script>
+	<script src="static/js/common.js"></script>
 	<script>
 		stats = JSON.parse('{{ stats | tojson | safe}}'); 
 		var txt = document.getElementById("txtarea");

@@ -4,16 +4,24 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
 	<link rel="stylesheet" type="text/css" href="static/css/weather-icons.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
   </head>
   <body>
-	<ul>
+	<div class="topnav">
 		<li><a class="active" href="/">Home</a></li>
-		<li><a href="/tasks">Tasks</a></li>
-<!--	<li><a href="/stats">Stats</a></li> -->
-		<li><a href="/expenses">Expenses</a></li>
-		<li><a href="/plants">Plants</a></li>
-	</ul>
+		<div id="navlinks">
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/expenses">Expenses</a></li>
+			<li><a href="/plants">Plants</a></li>
+			<li><a href="/stats">Stats</a></li>
+			<li><a href="/videos">Videos</a></li>
+			<li><a href="/coins">Coins</a></li>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+    		<i class="fa fa-bars"></i>
+  		</a>
+	</div>
 	<pre id="productivity"><b>Productivity</b></pre>
 	<a id="prod_val" href="/stats" style="text-decoration:none"><b>0%</b></a>
 	<pre id="expenses"><b>Remaining Expenses this Month</b></pre>
@@ -61,6 +69,7 @@
 	<pre id="sunlight"><b>Sunlight at back window: 00:00 - 23:59</b></pre>
 	<div id="loader"></div>
 	<script src="static/js/summary.js"></script>
+	<script src="static/js/common.js"></script>
 	<script>
 		var data = JSON.parse('{{ data | tojson | safe}}');
 		setTextFromData('prod_val', data["prod"]);
