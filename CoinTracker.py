@@ -43,6 +43,7 @@ class CoinTracker():
 		return "sall good"
 
 	def revertPrevState(self):
+		rem = ""
 		if self.last_year[0] != "":
 			year = self.last_year[0]
 			mark = self.last_year[1]
@@ -50,8 +51,12 @@ class CoinTracker():
 				self.wheat[year][mark] -= 1
 			elif 1959 <= int(year) <= 1981:
 				self.memorial[year][mark] -= 1
-
+			rem = "Removed %s" % year
+			if mark != "None": rem += " %s" % mark
 			self.last_year = ("", "")
+			return rem
+		else:
+			return "Nothing to undo"
 
 def ReadData(filename):
 	ret_data = {}
@@ -97,14 +102,16 @@ def PlotData(coll, supply, fig=None):
 	
 	coll_totals = []
 	coll_D_totals = []
+	coll_S_totals = []
 	supply_totals = []
 	short_years = []
 	for year in coll:
 		tot = coll[year]["None"] + coll[year]["D"] + coll[year]["S"]
 		coll_totals.append(tot)
 		coll_D_totals.append(coll[year]["D"])
+		coll_S_totals.append(coll[year]["S"])
 
-		tot = (supply[year]["None"] + supply[year]["D"] + supply[year]["S"])
+		tot = (supply[year]["None"] + supply[year]["D"] + supply[year]["S"]) / 1e8
 		supply_totals.append(tot)
 
 		short_years.append(int(year)-1900)
@@ -129,7 +136,8 @@ def PlotData(coll, supply, fig=None):
 
 	ax.bar(short_years, coll_totals)
 	ax.bar(short_years, coll_D_totals)
-	ax.legend(["All","D"])
+	ax.bar(short_years, coll_S_totals)
+	ax.legend(["P","D", "S"])
 	if 81 in short_years:
 		plt.axvline(x=69.5, color="black", linestyle="--", linewidth=0.7)
 		plt.axvline(x=76.5, color="black", linestyle="--", linewidth=0.7)
@@ -143,6 +151,7 @@ def PlotData(coll, supply, fig=None):
 	ax2 = ax.twinx()
 	ax2.plot(short_years, supply_totals, color="red")
 	ax2.set_ylim([0, ax2.get_ylim()[1]])
+	ax2.set_ylabel("Total Mintage (100 million)")
 	
 	return fig
 
