@@ -25,7 +25,7 @@
         <b><u>Add Coin</u></b>
         <br>
         Year:
-        <input type="text" id="cyear" name="year" size="15">
+        <input type="number" id="cyear" name="year" size="15">
 		<br>
 		<br>
 		Mint Mark:
@@ -43,54 +43,13 @@
     </form>
 	<pre id="submit_status"></pre>
 	<button type="button" class="stylized" id="saveBtn" onClick="saveCoinData(event);">Save</button>
+	<br>
+	<button type="button" class="stylized" id="undoBtn" onClick="undoLast(event);">Undo</button>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<img src={{ image2 }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<script src="static/js/common.js"></script>
+	<script src="static/js/coins.js"></script>
 	<script>
-		function submitCoin()
-		{
-			data = $("#myForm").serialize();
-			data = "cmd=ADD&type=Coin&"+data;
-			$.ajax({
-				url: "/post",
-				type: "post",
-				data: data,
-				success: function(res, textStatus){
-					if (res != "\"sall good\"") {
-						alert(res)
-						document.getElementById("submit_status").innerHTML = "Error Occurred";
-					}
-					else {
-						data = $("#myForm").serializeArray()
-						var year = data[0].value;
-						var mark = data[1].value;
-						if (parseInt(year) < 100) {
-							year = (parseInt(year) + 1900).toString();
-						}
-						document.getElementById("submit_status").innerHTML = "Added " + year + " " + mark;
-						document.getElementById("cyear").value="";
-						document.getElementById("none").checked=true;
-						document.getElementById("denver").checked=false;
-						document.getElementById("sanfran").checked=false;
-					}
-				}
-			});
-		}
-
-		function saveCoinData(evt)
-		{
-			$.ajax({
-				url: "/post",
-				type: "post",
-				data: "cmd=UPDATE&type=Coin",
-				success: function(){
-					alert("Saved coin data!");
-					//perUpdate();
-				}
-			});
-		}
-
-			
 	</script>
   </body>
 </html>

@@ -230,6 +230,8 @@ def postData():
 			res = exp_proc.revertPrevState()
 		elif cmdType == "Plant":
 			res = plant_proc.revertPrevState()	
+		elif cmdType == "Coin":
+			res = coin_proc.revertPrevState()
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "UPDATE":
