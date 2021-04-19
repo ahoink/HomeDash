@@ -4,6 +4,7 @@ class CoinTracker():
 	def __init__(self):
 		self.memorial = ReadData("pennies_collection")
 		self.wheat = ReadData("wheat_collection")
+		self.last_year = ("", "")
 
 	def addPenny(self, year, mark):
 		if not year.isdigit():
@@ -20,12 +21,37 @@ class CoinTracker():
 		else:
 			return "Invalid Year"
 
+		self.last_year = (year, mark)
+
 		return "sall good"
 
 	def saveData(self):
-		SaveData(self.memorial, "pennies_collection")
-		SaveData(self.wheat, "wheat_collection")
+		try:
+			SaveData(self.memorial, "pennies_collection")
+		except Exception as ex:
+			print("Failed to save memorial penny data")
+			print(ex)
+			return ex
+
+		try:
+			SaveData(self.wheat, "wheat_collection")
+		except Exception as ex:
+			print("Failed to save wheat penny data")
+			print(ex)
+			return ex
+
 		return "sall good"
+
+	def revertPrevState(self):
+		if self.last_year[0] != "":
+			year = self.last_year[0]
+			mark = self.last_year[1]
+			if 1909 <= int(year) <= 1958:
+				self.wheat[year][mark] -= 1
+			elif 1959 <= int(year) <= 1981:
+				self.memorial[year][mark] -= 1
+
+			self.last_year = ("", "")
 
 def ReadData(filename):
 	ret_data = {}
@@ -78,7 +104,7 @@ def PlotData(coll, supply, fig=None):
 		coll_totals.append(tot)
 		coll_D_totals.append(coll[year]["D"])
 
-		tot = (supply[year]["None"] + supply[year]["D"] + supply[year]["S"]) / 1e8
+		tot = (supply[year]["None"] + supply[year]["D"] + supply[year]["S"])
 		supply_totals.append(tot)
 
 		short_years.append(int(year)-1900)
