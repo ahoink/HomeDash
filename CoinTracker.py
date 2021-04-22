@@ -1,4 +1,17 @@
 import matplotlib.pyplot as plt
+import time
+import requests
+import json
+
+def GetCopperPrice():
+	url = "https://api.metals.live/v1/spot/copper"
+	
+	try:
+		resp = requests.get(url)
+		json_data = resp.json()
+		return float(json_data[-1]["price"])
+	except:
+		return 0
 
 class CoinTracker():
 	def __init__(self):
@@ -58,6 +71,20 @@ class CoinTracker():
 		else:
 			return "Nothing to undo"
 
+	def getPlots(self):
+		mem_supply = ReadData("pennies_supply")
+		wheat_supply = ReadData("wheat_supply")
+		fig = PlotData(self.memorial, mem_supply, "Memorial Cents (1959-1981)")
+		#fig.suptitle("%d Memorial Pennies (1959-1981)" % sum(count))
+		#fig.tight_layout()	
+
+		#count = [wheat[y]["None"] + wheat[y]["D"] + wheat[y]["S"] for y in wheat]
+		fig2 = PlotData(self.wheat, wheat_supply, "Wheat Cents (1909-1958)")
+		#fig2.suptitle("%d Wheat Pennies (1909-1958)" % sum(count))
+		#fig2.tight_layout()
+
+		return fig, fig2
+
 def ReadData(filename):
 	ret_data = {}
 	if ".csv" not in filename:
@@ -98,7 +125,7 @@ def GetData():
 
 	return memorial, memorial_supply, wheat, wheat_supply
 
-def PlotData(coll, supply, fig=None):
+def PlotData(coll, supply, title, fig=None):
 	
 	coll_totals = []
 	coll_D_totals = []
@@ -108,7 +135,7 @@ def PlotData(coll, supply, fig=None):
 	for year in coll:
 		tot = coll[year]["None"] + coll[year]["D"] + coll[year]["S"]
 		coll_totals.append(tot)
-		coll_D_totals.append(coll[year]["D"])
+		coll_D_totals.append(coll[year]["D"] + coll[year]["S"])
 		coll_S_totals.append(coll[year]["S"])
 
 		tot = (supply[year]["None"] + supply[year]["D"] + supply[year]["S"]) / 1e8
@@ -116,17 +143,21 @@ def PlotData(coll, supply, fig=None):
 
 		short_years.append(int(year)-1900)
 
-	#tot_overall = sum(coll_totals)
-	#thirds = [0,0]
-	#for i in range(len(coll_totals)):
-			
-	#	if thirds[0] == 0 and sum(coll_totals[:i+1]) >= (tot_overall / 3):
-	#		thirds[0] = i-1
-	#	if thirds[0] != 0 and sum(coll_totals[thirds[0]:i+1]) >= (tot_overall / 3):
-	#		thirds[1] = i-1
-	#		break
-	#thirds = [short_years[x] for x in thirds]
-
+	'''num_divs = 4
+	target_sum = sum(coll_totals) / num_divs
+	divs = [0]*(num_divs-1)
+	for i in range(len(coll_totals)):
+		for j in range(num_divs):
+			if divs[j] == 0:
+				if sum(coll_totals[divs[max(0, j-1)]:i+1]) > target_sum:
+					a = abs(sum(coll_totals[divs[max(0, j-1)]:i]) - target_sum)
+					b = abs(sum(coll_totals[divs[max(0, j-1)]:i+1]) - target_sum)
+					if a < b: divs[j] = i
+					else: divs[j] = i+1
+				break
+		if divs[-1] != 0: break
+	print([short_years[x] for x in divs])
+	'''
 	if fig == None:
 		fig, ax = plt.subplots()
 	else:
@@ -139,11 +170,24 @@ def PlotData(coll, supply, fig=None):
 	ax.bar(short_years, coll_S_totals)
 	ax.legend(["P","D", "S"])
 	if 81 in short_years:
+		'''for i in range(num_divs-1):
+			idx1 = 0 if i == 0 else divs[i-1]
+			idx2 = divs[i]
+			y1 = short_years[idx1]
+			y2 = short_years[idx2]
+			plt.axvline(x=y2-0.5, color="black", linestyle="--", linewidth=0.7)
+			plt.text((y1+y2)/2, ax.get_ylim()[1]*0.95, sum(coll_totals[idx1:idx2]))
+		plt.text((short_years[divs[-1]] + 81)/2, ax.get_ylim()[1]*0.95, sum(coll_totals[divs[-1]:]))
+		'''
 		plt.axvline(x=69.5, color="black", linestyle="--", linewidth=0.7)
 		plt.axvline(x=76.5, color="black", linestyle="--", linewidth=0.7)
 		plt.text(64, ax.get_ylim()[1]*0.95, sum(coll_totals[:11]))
 		plt.text(73, ax.get_ylim()[1]*0.95, sum(coll_totals[11:18]))
 		plt.text(79, ax.get_ylim()[1]*0.95, sum(coll_totals[18:]))
+
+		price_lb = GetCopperPrice()
+		lbs = sum(coll_totals) * (0.95 * 3.11) / 453.6 # 3.11 g per penny, 95% copper, 453.6 g per pound
+		title += " [Melt value \$%.2f @ \$%.2f/lb]" % (lbs * price_lb, price_lb)
 	plt.xticks(rotation=-45)
 	ax.set_xticks(short_years)
 	ax.set_xticklabels(["'%d" % y for y in short_years])
@@ -152,7 +196,10 @@ def PlotData(coll, supply, fig=None):
 	ax2.plot(short_years, supply_totals, color="red")
 	ax2.set_ylim([0, ax2.get_ylim()[1]])
 	ax2.set_ylabel("Total Mintage (100 million)")
-	
+
+	fig.suptitle("%d %s" % (sum(coll_totals), title))
+	fig.tight_layout()
+
 	return fig
 
 def GetPlots():

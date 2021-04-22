@@ -149,7 +149,8 @@ def videosPage():
 
 @app.route("/coins")
 def coinsPage():
-	fig, fig2 = CoinTracker.GetPlots()
+	fig, fig2 = coin_proc.getPlots()
+
 	output = io.BytesIO()
 	FigureCanvas(fig).print_png(output)
 	imagestr = "data:image/png;base64,"
