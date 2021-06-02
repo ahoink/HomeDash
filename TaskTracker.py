@@ -64,6 +64,11 @@ class TaskTracker():
 			b = "00"
 		return {"val": "%d%%" % (curr_prod_val + 0.5), "color": "#%s%s%s" % (r, g, b)}
 
+	def getTaskInfo(self, task_name):
+		temp = dict(self.tasks[task_name])
+		temp["freq"] = secToTimeString(temp["freq"])
+		return temp
+
 	def getColorFromScore(self, score):
 		# generate hex string of color based on the score (lowest RGB value is 128 so the color is lighter and softer)
 		# Start as green and fade to yellow as score approaches half of the max score
@@ -133,6 +138,43 @@ class TaskTracker():
 
 		resp = [time.strftime("%b %d", time.localtime(tnow)), "DONE"]
 		return resp
+
+	def editTask(self, name, freq, cost, wt, isActive):
+		if not name or name not in self.tasks:
+			return "Invalid Name"
+		if not freq:
+			return "Invalid Frequency"
+
+		# If freq only contains numbers, treat it as days
+		if freq.isdigit():
+			freq = int(freq) * 86400
+		elif not freq[-1].isalpha():
+			return "Invalid Frequency"
+		else: # otherwise extract the "unit" (ex: for "2w" extract the 'w' and treat 2 as weeks)
+			unit = freq[-1].lower()
+			try:
+				freq = int(freq[:-1])
+			except:
+				return "Invalid Frequency"
+			if unit == "d":
+				freq *= 86400
+			elif unit == "w":
+				freq *= 86400 * 7
+			elif unit == "m":
+				freq *= 86400 * 30
+			else:
+				return "Invalid Frequency"
+
+		self.prev_state = copy.deepcopy(self.tasks)
+
+		self.tasks[name]["freq"] = freq
+		self.tasks[name]["timecost"] = cost
+		self.tasks[name]["weight"] = wt
+		self.tasks[name]["isActive"] = isActive
+
+		saveData(self.tasks)
+
+		return "sall good"
 
 	def revertPrevState(self):
 		if len(self.tasks.keys()) == len(self.prev_state.keys()):
@@ -379,10 +421,12 @@ def secToTimeString(t, whole=False):
 		else:
 			timestr = "%d mon" % (days/30+0.5)
 	else:
-		if days <= 28:
-			timestr = "%.2f d" % days
+		if days < 14:
+			timestr = "%dd" % days
+		elif days <= 28:
+			timestr = "%dw" % (days / 7 + 0.5)
 		else:
-			timestr = "%.2f M" % (days / 30)
+			timestr = "%dM" % (days / 30 + 0.5)
 	return timestr
 
 if __name__ == "__main__":

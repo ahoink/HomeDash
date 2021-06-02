@@ -40,12 +40,33 @@
 		<input type="submit" class="myButton" id="tsubmit" value="Submit">
 	</form>
 	<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>
+	<div class="form-popup" id="confTask">
+		<form class="form-container" id="confTaskForm" action="#" method="POST" onsubmit="editTask();return false">
+			<h1>Edit Task</h1>
+			<label for="e_name">Task Name</label>
+			<input type="text" id="e_name" name="e_name">
+			<label for="e_freq">Frequency</label>
+			<input type="text" id="e_freq" name="e_freq">
+			<label for="e_cost">Time Cost</label>
+			<input type="text" id="e_cost" name="e_cost">
+			<label for="e_wt">Weight</label>
+			<input type="text" id="e_wt" name="e_wt">
+			<label for"e_active">Active</label>
+			<input type="checkbox" id="e_active" name="e_active">
+		
+			<button type="submit" class="myButton">Save</button>
+			<button type="button" class="myButton" onClick="closeConfForm()">Cancel</button>
+		</form>
+	</div>
+
+	<img id="confBtn" src="static/images/gear_grey.png" alt="gear.png" width="64" height="64" onClick="configureTracker(event);">
 	<div id="loader"></div>	
 	<script src="static/js/tasks.js"></script>
 	<script src="static/js/common.js"></script>
 	<script>
 		var data = JSON.parse('{{ data | tojson | safe}}');
     	constructTable('#table', data);
+		window.configureMode = false;
 	</script>
   </body>
 </html>

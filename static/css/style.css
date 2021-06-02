@@ -80,6 +80,49 @@ label {
 	text-align:left;
 }
 
+/* Pop-up user input form */
+.form-popup {
+	display: none;
+	position: absolute;
+	left: 50px;
+	top: 150px;
+	border: 3px solid #818181;
+	z-index: 9;
+	background: #f1f1f1;
+}
+
+.form-container input[type=text], input[type=checkbox] {
+	width: 150px;
+	display: block;
+	padding: 5 0 5 0;
+	margin: 0 10 10 0;
+	border: none;
+	background: #ffffff;
+}
+
+.form-container label {
+	float: left;
+	display: inline-block;
+	padding: 0 0 0 0;
+	margin: 0 -30 0 5;
+}
+
+.form-container button {
+	-webkit-appearance: none;
+	box-shadow:inset 0px 1px 0px 0px #7a8eb9;
+	background-color:#7080C0;
+	border:1px solid #314159;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Verdana;
+	font-size:13px;
+	font-weight:bold;
+	padding:6px 12px;
+	text-decoration:none;
+	margin: 5 30 5 30;
+}
+
 /* navigation bar */
 .topnav {
 	list-style-type: none;

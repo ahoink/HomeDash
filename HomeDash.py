@@ -224,6 +224,26 @@ def postData():
 			res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
 		else:
 			print("Invalid command type '%s'" % cmdType)
+	elif cmd == "EDIT":
+		if cmdType == "Task":
+			if not request.form["e_cost"]:
+				res = "Error: Time Cost is required"
+			elif not request.form["e_wt"]:
+				res = "Error: Weight is required"
+			else:
+				res = task_proc.editTask(
+								request.form["e_name"],	
+								request.form["e_freq"],
+								int(request.form["e_cost"]),
+								int(request.form["e_wt"]),
+								"e_active" in request.form)
+		else:
+			print("Invalid command type '%s'" % cmdType)
+	elif cmd == "GET":
+		if cmdType == "Task":
+			res = task_proc.getTaskInfo(request.form["task"])
+		else:
+			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "UNDO":
 		if cmdType == "Task":
 			res = task_proc.revertPrevState()
