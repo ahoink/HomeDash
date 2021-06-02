@@ -207,6 +207,7 @@ def processStatsData(data, tasks, retDaily=True):
 	completed = []
 	tot_score = 0.0
 	curr_date = datetime.fromtimestamp(time.time())
+	past_year = curr_date - timedelta(days=365)
 	task_stats = {}
 	days_stats = {}
 	weights = {}
@@ -227,13 +228,14 @@ def processStatsData(data, tasks, retDaily=True):
 
 		day = time.strftime("%A", time.localtime(task_completed))
 		dt = datetime.fromtimestamp(task_completed)
+		tasks[task_name]["last"] = task_completed
+		if dt < past_year: continue
 		prod_score = normalizeScore(task_score)
 		#productivity.append((prod_score * weights[task_name], weights[task_name]))
 		# increment number for tasks performed on this day
 		days_stats[day] = days_stats.get(day, 0) + time_cost[task_name]
 		days_stats["tot"] = days_stats.get("tot", 0) + time_cost[task_name]
 
-		tasks[task_name]["last"] = task_completed
 
 		# keep track of which days each tasks gets completed, num times completed, and total score
 		temp = task_stats.get(task_name, {"days":[], "completed":0, "score":0, "freq":0})
@@ -256,6 +258,7 @@ def processStatsData(data, tasks, retDaily=True):
 				for t in tasks:
 					if t not in completed: continue
 					temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
+					if not tasks[t]["isActive"]: temp_score = 0.0
 					if temp_score > 1.0:
 						temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
 				# calc weighted average productivity score
@@ -272,6 +275,7 @@ def processStatsData(data, tasks, retDaily=True):
 	for t in tasks:
 		if t not in completed: continue
 		temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
+		if not tasks[t]["isActive"]: temp_score = 0.0
 		if temp_score > 1.0:
 			temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
 	# calc weighted average productivity score
