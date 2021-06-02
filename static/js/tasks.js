@@ -146,6 +146,10 @@ function configureTracker(evt)
 
 function openConfForm(evt)
 {
+
+	if (document.getElementById("confTask").style.display == "block")
+		return;
+
 	var node = evt.target || evt.srcElement;					// node clicked in event
 	var idx = node.parentNode.rowIndex - 1;						// index of row minus 1 to ignore header row
 	var name = String(node.parentNode.childNodes[0].innerText);	// text of first entry of row (task name)
