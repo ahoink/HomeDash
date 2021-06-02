@@ -208,8 +208,9 @@ def plotStats():
 			js_stats[e] = {"min":min_amt, "max":max_amt, "avg":round(avg_amt,2)}
 
 	months = sorted([m for m in month_stats])
+	curr_month = int(time.strftime("%m", time.localtime(time.time())))
 	if 12 in months and 1 in months:
-		while months[0] < 6:
+		while months[-1] != curr_month:
 			months = months[1:] + [months[0]]
 	vals = [month_stats[m] for m in months]
 	# Make sure plot spans at least 6 months
@@ -228,7 +229,7 @@ def plotStats():
 		plt.text(i-0.4, v+15, "$%d" % (v+0.5))
 	plt.plot([-1, len(vals)], [avg_monthly, avg_monthly], color="red", linestyle="--", linewidth=0.5)
 	plt.xlim((-0.5, len(vals)-0.5))
-	plt.text(-1.3, avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
+	plt.text(-1.5, avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
 
 	return fig, js_stats
 
