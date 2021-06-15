@@ -28,6 +28,7 @@ def readConfig():
 		data = f.readlines()
 	
 	for line in data:
+		if line[0] == '#': continue
 		# should be tab separated
 		splitted = line.replace("\n", "").split()
 

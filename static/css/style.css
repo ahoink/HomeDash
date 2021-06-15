@@ -226,7 +226,7 @@ label {
 	height: 70px;
 	width: 195px;
 	position: relative;
-	left: 145px;
+	left: 140px;
 	top: -146px;
 	font-family: Tahoma, Geneva, sans-serif;
 	font-size: 10pt;
@@ -239,6 +239,7 @@ label {
 	position:relative;
 	left: 200px;
 	top: -223px;
+	width: 125px;
 	font-family: Tahoma, Geneva, sans-serif;
 	font-size: 20pt;
 	margin-bottom: -200px;
