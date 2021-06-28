@@ -181,12 +181,21 @@ def plotStats():
 	expense_stats = {}
 	month_stats = {}
 	month_str = ["None", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+	curr_month = int(time.strftime("%m", time.localtime(time.time())))
+	curr_year = int(time.strftime("%y", time.localtime(time.time())))
+	old_cutoff = time.time() - 365*86400 # one year ago
 	for i in range(len(data)):
 		expense_name = data[i][0]
 		expense_completed = data[i][1]
 		expense_amt = data[i][2]
 
+		# ignore data older than a year
+		if expense_completed <= old_cutoff: continue
+
 		month = int(time.strftime("%m", time.localtime(expense_completed)))
+		year = int(time.strftime("%y", time.localtime(expense_completed)))
+		if month == curr_month and year != curr_year: continue # ignore data from same month last year
+
 		month_tot = month_stats.get(month, 0) + expense_amt
 		month_stats[month] = month_tot
 	
@@ -207,20 +216,29 @@ def plotStats():
 		if min_amt != max_amt:
 			js_stats[e] = {"min":min_amt, "max":max_amt, "avg":round(avg_amt,2)}
 
+	# sort so the current month is rightmost position
 	months = sorted([m for m in month_stats])
-	curr_month = int(time.strftime("%m", time.localtime(time.time())))
 	if 12 in months and 1 in months:
 		while months[-1] != curr_month:
 			months = months[1:] + [months[0]]
 	vals = [month_stats[m] for m in months]
+	
 	# Make sure plot spans at least 6 months
 	while len(vals) < 6:
 		next_month = months[-1]+1
 		if next_month > 12: next_month = 1
 		months.append(next_month)
 		vals.append(0)
+
+	# only span X months
+	span = 6
+	span = min(span,len(vals))
+	vals = vals[-span:]
+	months = months[-span:]
+
 	avg_monthly = sum(vals[:-1]) / (len(vals) - 1)
 
+	# plot and format
 	fig = plt.figure()
 	plt.bar(range(len(vals)), vals)
 	plt.xticks(range(len(vals)), [month_str[int(x)] for x in months])
@@ -229,7 +247,7 @@ def plotStats():
 		plt.text(i-0.4, v+15, "$%d" % (v+0.5))
 	plt.plot([-1, len(vals)], [avg_monthly, avg_monthly], color="red", linestyle="--", linewidth=0.5)
 	plt.xlim((-0.5, len(vals)-0.5))
-	plt.text(-1.5, avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
+	plt.text(-0.5-45/(496/span), avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
 
 	return fig, js_stats
 
