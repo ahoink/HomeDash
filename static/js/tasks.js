@@ -163,6 +163,7 @@ function openConfForm(evt)
 			document.getElementById("e_freq").value = data["freq"];
 			document.getElementById("e_cost").value = data["timecost"];
 			document.getElementById("e_wt").value = data["weight"];
+			document.getElementById("e_last").value = data["last"];
 			document.getElementById("e_active").checked = data["isActive"] == "1";
 		}
 	});
@@ -176,6 +177,7 @@ function closeConfForm()
 	document.getElementById("e_freq").value = "";
 	document.getElementById("e_cost").value = "";
 	document.getElementById("e_wt").value = "";
+	document.getElementById("e_last").value = "";
 	document.getElementById("e_active").checked = false;
 	document.getElementById("confTask").style.display = "None";
 }

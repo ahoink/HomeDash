@@ -231,12 +231,15 @@ def postData():
 				res = "Error: Time Cost is required"
 			elif not request.form["e_wt"]:
 				res = "Error: Weight is required"
+			elif not request.form["e_last"]:
+				res = "Error: Last Done is required"
 			else:
 				res = task_proc.editTask(
 								request.form["e_name"],	
 								request.form["e_freq"],
 								int(request.form["e_cost"]),
 								int(request.form["e_wt"]),
+								int(request.form["e_last"]),
 								"e_active" in request.form)
 		else:
 			print("Invalid command type '%s'" % cmdType)

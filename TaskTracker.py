@@ -122,6 +122,7 @@ class TaskTracker():
 	
 	def updateTask(self, task_name):
 		tnow = time.time()
+		self.scoreTasks()
 		# get sublist from task list where name matches task_name and get the index of that sublist
 		#sublist = [x for x in self.tasks if x[0] == task_name][0]
 		#idx = self.tasks.index(sublist)
@@ -139,7 +140,7 @@ class TaskTracker():
 		resp = [time.strftime("%b %d", time.localtime(tnow)), "DONE"]
 		return resp
 
-	def editTask(self, name, freq, cost, wt, isActive):
+	def editTask(self, name, freq, cost, wt, last, isActive):
 		if not name or name not in self.tasks:
 			return "Invalid Name"
 		if not freq:
@@ -170,9 +171,11 @@ class TaskTracker():
 		self.tasks[name]["freq"] = freq
 		self.tasks[name]["timecost"] = cost
 		self.tasks[name]["weight"] = wt
+		self.tasks[name]["last"] = last
 		self.tasks[name]["isActive"] = isActive
 
 		saveData(self.tasks)
+		editLastCompletedTime(name, last)
 
 		return "sall good"
 
@@ -238,6 +241,34 @@ def remLastStatEntry():
 	with open("data/stats.csv", 'w') as f:
 		for d in data:
 			f.write(d)
+
+def editLastCompletedTime(task_name, t):
+	data = readStats()
+	idx = -1
+	idx_new = -1
+	for i in range(len(data)-1,0,-1):
+		if idx < 0 and task_name in data[i][0]:
+			last1 = -(data[i][3] * data[i][2] - data[i][1])
+			new_score = (t - last1) / data[i][2]
+			data[i][1] = t
+			data[i][3] = new_score
+
+			idx = i
+			continue
+		if idx >= 0 and data[i][1] < data[idx][1]:
+			idx_new = i+1
+			break
+
+	if idx_new < 0:
+		print("ERROR: Could not find a stat point earlier than %d" % data[idx][1])
+		return
+
+	data = data[:idx_new] + [data[idx]] + data[idx_new:idx] + data[idx+1:]
+
+	with open("data/stats.csv", "w") as f:
+		for d in data:
+			f.write("%s,%d,%d,%f\n" % (d[0], d[1], d[2], d[3]))
+			
 
 def normalizeScore(score):
 	return 100 * (1 - min(1, max(0, score-1)))	
