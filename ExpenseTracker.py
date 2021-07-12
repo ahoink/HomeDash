@@ -219,8 +219,12 @@ def plotStats():
 	# sort so the current month is rightmost position
 	months = sorted([m for m in month_stats])
 	if 12 in months and 1 in months:
-		while months[-1] != curr_month:
-			months = months[1:] + [months[0]]
+		if curr_month in months:
+			while months[-1] != curr_month:
+				months = months[1:] + [months[0]]
+		else:
+			while months[-1] != (curr_month - 1):
+				months = months[1:] + [months[0]]
 	vals = [month_stats[m] for m in months]
 	
 	# Make sure plot spans at least 6 months
