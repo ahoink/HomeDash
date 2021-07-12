@@ -18,7 +18,7 @@ class PlantTracker():
 		for i in range(len(self.plants)):
 			p = self.plants[i]
 			freq = self.freqs.get(p[0], 0)
-			score = (tnow - p[1]) / freq if freq > 0 else 1
+			score = (tnow - p[1]) / freq if freq > 0 else (MAX_SCORE / 2)
 			# Data file doesn't include score, so it may not exist yet if file was just read
 			if not self.init: self.plants[i].append(score)
 			else: self.plants[i][-1] = score
@@ -43,7 +43,7 @@ class PlantTracker():
 		# generate hex string of color based on the score (lowest RGB value is 128 so the color is lighter and softer)
 		# Start as green and fade to yellow as score approaches half of the max score
 		if score <= (MAX_SCORE/2):
-			r = "%0.2X" % int(128 + 128 * (score / (MAX_SCORE/2)))
+			r = "%0.2X" % int(127 + 128 * (score / (MAX_SCORE/2)))
 			g = "FF"
 			b = "80"
 		# fade from yellow to red as score approaches max score
