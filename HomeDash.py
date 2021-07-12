@@ -45,6 +45,8 @@ def readConfig():
 			config["angle"] = int(splitted[1])
 		elif cat == "owm_key":
 			config["OWM_KEY"] = splitted[1]
+		elif "elev" in cat:
+			config[cat] = int(splitted[1])
 		else:
 			print("Unknown category '%s'" % cat) 
 	return config
@@ -89,8 +91,8 @@ def getHomeData(update=False):
 	lat = config["lat"]
 	lon = config["lon"]
 	angle = config["angle"]
-	min_elev = 10 #config["min_elev"]
-	max_elev = 36 #config["max_elev"]
+	min_elev = config["min_elev"]
+	max_elev = config["max_elev"]
 	start,end = sun_azimuth.getSunlightTimes(lat, lon, angle, min_elev, max_elev)
 
 	# get weather data
