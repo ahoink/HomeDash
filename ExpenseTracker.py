@@ -3,42 +3,46 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import copy
 
 MAX_SCORE = 86400*30
 
 class ExpenseTracker():
 	def __init__(self):
 		self.expenses = readData()
-		self.prev_state = [[x for x in y] for y in self.expenses]
+		self.prev_state = copy.deepcopy(self.expenses)
 	
 	def getExpenseList(self, weekOnly=False):
 		exps = []
 		hdrs = ["Expense", "Amount", "Due", "Autopay"]
 		auto_var = []
-		sorted_expenses = sorted(self.expenses, key=lambda x: x[2]) # sort in order of due date
+		sorted_expenses = sorted(self.expenses.keys(), key=lambda x: self.expenses[x]["due"]) # sort in order of due date
 		tnow = time.time()
-		for t in sorted_expenses:
+		for e in sorted_expenses:
 			temp = {}
 			#due_date = ""
-			if t[3] and tnow > t[2] + 86400:	# autopay enabled and past due
-				if t[4]: # variable, ask user for amount via javascript
-					auto_var.append(t[0])
+			expense = self.expenses[e]
+			if expense["autopay"] and tnow > expense["due"] + 86400:	# autopay enabled and past due
+				if expense["variable"]: # variable, ask user for amount via javascript
+					auto_var.append(e)
 				else: # not variable, simply update as usual and reset the timestamp
-					t[2] = self.updateExpense(t[0], ret_ts=True)
-			temp[hdrs[0]] = t[0] 											# Expense name
-			temp[hdrs[1]] = "$%.2f" % t[1]									# Amount (or average/predicted)
-			temp[hdrs[2]] = time.strftime("%b %d", time.localtime(t[2]))	# Due Date (Month Date)
-			temp[hdrs[3]] = "Yes" if t[3] else "No"							# Autopay enabled
-			temp["Color"] = self.getColorFromDate(t[2])						# Color hex code
-			temp["isVar"] = t[4]
-			if weekOnly and abs(t[2] - tnow) > 86400*7:
+					expense["due"] = self.updateExpense(e, ret_ts=True)
+			temp[hdrs[0]] = e	 													# Expense name
+			temp[hdrs[1]] = "$%.2f" % expense["amount"]								# Amount (or average/predicted)
+			temp[hdrs[2]] = time.strftime("%b %d", time.localtime(expense["due"]))	# Due Date (Month Date)
+			temp[hdrs[3]] = "Yes" if expense["autopay"] else "No"					# Autopay enabled
+			temp["Color"] = self.getColorFromDate(expense["due"])					# Color hex code
+			temp["isVar"] = expense["variable"]
+			if weekOnly and abs(expense["due"] - tnow) > 86400*7:
 				continue
 			exps.append(temp)	
 		return {"Headers":hdrs, "Expenses":exps, "Auto-vari":auto_var}
 
 	def getBalance(self):
 		curr_month = time.strftime("%b", time.localtime(time.time()))
-		due_this_month = [e[1] for e in self.expenses if time.strftime("%b", time.localtime(e[2])) == curr_month and (e[2] > time.time())]
+		due_this_month = [self.expenses[e]["amount"] for e in self.expenses if\
+		 	time.strftime("%b", time.localtime(self.expenses[e]["due"])) == curr_month and\
+			(self.expenses[e]["due"] > time.time())]
 		balance = sum(due_this_month)
 		color = "black"
 		return {"val": "$%.2f" % balance, "color": color}
@@ -76,7 +80,7 @@ class ExpenseTracker():
 		return int(new_dt.timestamp())
 
 	def addExpense(self, name, amount, date, autopay, isvar):
-		if not name or name in [n[0] for n in self.expenses]:
+		if not name or name in self.expenses:
 			return "Invalid Name"
 		if not date or not amount:
 			return "Invalid Date"
@@ -92,66 +96,74 @@ class ExpenseTracker():
 			return "Invalid amount"
 
 		# save the current state and add the new expense with last completed time as now
-		self.prev_state = [[x for x in y] for y in self.expenses]
-		self.expenses.append([name, amount, date, autopay, isvar])
+		self.prev_state = copy.deepcopy(self.expenses)
+		self.expenses[name] = {
+			"amount": amount,
+			"due": date,
+			"autopay": autopay,
+			"variable": isvar
+		}
 		saveData(self.expenses)
 		return "sall good"
 	
 	def updateExpense(self, exp_name, amount=None, ret_ts=False):
 		tnow = time.time()
-		# get sublist from expense list where name matches expense_name and get the index of that sublist
-		sublist = [x for x in self.expenses if x[0] == exp_name][0]
-		idx = self.expenses.index(sublist)
 		
 		# CC, remove tracked expenses that are paid on CC
 		if exp_name == "Amazon CC":
-			templist = [x for x in self.expenses if x[0] == "Internet"][0]
-			amount = float(amount) - float(templist[1])
+			pass
+			#templist = [x for x in self.expenses if x[0] == "Internet"][0]
+			#amount = float(amount) - float(templist[1])
 
 		# save the current state before updating
-		self.prev_state = [[x for x in y] for y in self.expenses]
+		self.prev_state = copy.deepcopy(self.expenses)
 
 		# save the expense and score upon completion to the stats file
 		if amount != None and amount != "null":
-			sublist[1] = float(amount)
-			self.expenses[idx][1] = float(amount)
-		saveStats(sublist, tnow)
+			self.expenses[exp_name]["amount"] = float(amount)
+		saveStats(exp_name, self.expenses[exp_name], tnow)
 
 		# update expense last completed time and save to file
-		self.expenses[idx][2] = self.incrementDate(self.expenses[idx][2])
+		self.expenses[exp_name]["due"] = self.incrementDate(self.expenses[exp_name]["due"])
 		saveData(self.expenses)
 		
 		# return epoch timestamp		
-		if ret_ts: return self.expenses[idx][2]
+		if ret_ts: return self.expenses[exp_name]["due"]
 
-		resp = [time.strftime("%b %d", time.localtime(self.expenses[idx][2])), self.expenses[idx][1]]
+		resp = [time.strftime("%b %d", time.localtime(self.expenses[exp_name]["due"])), self.expenses[exp_name]["amount"]]
 		return resp
 
 	def revertPrevState(self):
-		if len(self.expenses) == len(self.prev_state):
+		if len(self.expenses.keys()) == len(self.prev_state.keys()):
 			remLastStatEntry()
-		self.expenses = [[x for x in y] for y in self.prev_state]
+		self.expenses = copy.deepcopy(self.prev_state)
 		saveData(self.expenses)
 		return "sall good"
 
 def readData():
-	exps = []
+	exps = {}
+	data = []
 	with open("data/expenses.csv", 'r') as f:
-		exps = f.readlines()
-	exps = exps[1:]
-	exps = [e.replace("\n","").split(',') for e in exps]
-	for i in range(len(exps)):
-		exps[i][1] = float(exps[i][1])	# amount
-		exps[i][2] = int(exps[i][2])	# due timestamp
-		exps[i][3] = exps[i][3] == "1"	# autopay enabled
-		exps[i][4] = exps[i][4] == "1"	# amount varies
+		data = f.readlines()
+	data = data[1:]
+	data = [e.replace("\n","").split(',') for e in data]
+	for i in range(len(data)):
+		name = data[i][0]
+		if name[0] == "#": continue
+		exps[name] = {
+			"amount": float(data[i][1]),
+			"due": int(data[i][2]),
+			"autopay": data[i][3] == "1",
+			"variable": data[i][4] == "1"
+		}
 	return exps
 
 def saveData(data):
 	with open("data/expenses.csv", 'w') as f:
 		f.write("expense,amount,due,autopay,variable\n")
 		for e in data:
-			f.write("%s,%f,%d,%d,%d\n" % (e[0], e[1], e[2], e[3], e[4]))
+			f.write("%s,%f,%d,%d,%d\n" % 
+			(e, data[e]["amount"], data[e]["due"], data[e]["autopay"], data[e]["variable"]))
 
 def readStats():
 	data = []
@@ -163,9 +175,9 @@ def readStats():
 		data[i][2] = float(data[i][2]) # amount
 	return data
 
-def saveStats(data, t):
+def saveStats(exp_name, data, t):
 	with open("data/expense_stats.csv", "a") as f:
-		f.write("%s,%d,%f\n" % (data[0], t, data[1]))
+		f.write("%s,%d,%f\n" % (exp_name, t, data["amount"]))
 
 def remLastStatEntry():
 	data = []
