@@ -227,11 +227,13 @@ def readStats():
 		data[i][1] = int(data[i][1]) # timestamp
 		data[i][2] = int(data[i][2]) # frequency
 		data[i][3] = float(data[i][3]) # score
+		data[i][4] = int(data[i][4]) # time cost
+		data[i][5] = int(data[i][5]) # weight
 	return data
 
 def saveStats(task, data, t):
 	with open("data/stats.csv", "a") as f:
-		f.write("%s,%d,%d,%f\n" % (task, t, data["freq"], data["score"]))
+		f.write("%s,%d,%d,%f,%d,%d\n" % (task, t, data["freq"], data["score"], data["timecost"], data["weight"]))
 
 def remLastStatEntry():
 	data = []
@@ -267,7 +269,7 @@ def editLastCompletedTime(task_name, t):
 
 	with open("data/stats.csv", "w") as f:
 		for d in data:
-			f.write("%s,%d,%d,%f\n" % (d[0], d[1], d[2], d[3]))
+			f.write("%s,%d,%d,%f,%d,%d\n" % (d[0], d[1], d[2], d[3], d[4], d[5]))
 			
 
 def normalizeScore(score):
@@ -293,8 +295,10 @@ def processStatsData(data, tasks, retDaily=True):
 		task_completed = data[i][1]
 		task_freq = data[i][2]
 		task_score = data[i][3]
+		task_cost = data[i][4]
+		task_weight = data[i][5]
 
-		if task_name not in weights: 
+		if task_name not in tasks: 
 			continue
 		if task_name not in completed:
 			completed.append(task_name)
@@ -306,8 +310,8 @@ def processStatsData(data, tasks, retDaily=True):
 		prod_score = normalizeScore(task_score)
 		#productivity.append((prod_score * weights[task_name], weights[task_name]))
 		# increment number for tasks performed on this day
-		days_stats[day] = days_stats.get(day, 0) + time_cost[task_name]
-		days_stats["tot"] = days_stats.get("tot", 0) + time_cost[task_name]
+		days_stats[day] = days_stats.get(day, 0) + task_cost
+		days_stats["tot"] = days_stats.get("tot", 0) + task_cost
 
 
 		# keep track of which days each tasks gets completed, num times completed, and total score
@@ -320,7 +324,7 @@ def processStatsData(data, tasks, retDaily=True):
 		
 		# need at least WMA_INT elements before calculating weight moving average
 		if len(productivity) < WMA_INT:
-			productivity.append((prod_score * weights[task_name], weights[task_name]))
+			productivity.append((prod_score * task_weight, task_weight))
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 		# fill in gaps in daily productivity
 		else:
@@ -333,12 +337,12 @@ def processStatsData(data, tasks, retDaily=True):
 					temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
 					if not tasks[t]["isActive"]: temp_score = 0.0
 					if temp_score > 1.0:
-						temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
+						temp_prod.append((normalizeScore(temp_score) * tasks[t]["weight"], tasks[t]["weight"]))
 				# calc weighted average productivity score
 				daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
 				daily_prod.append((ts, daily_score))
 				curr_date += timedelta(days=1)
-			productivity.append((prod_score * weights[task_name], weights[task_name]))
+			productivity.append((prod_score * task_weight, task_weight))
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 
 	# get daily score for today
@@ -350,7 +354,7 @@ def processStatsData(data, tasks, retDaily=True):
 		temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
 		if not tasks[t]["isActive"]: temp_score = 0.0
 		if temp_score > 1.0:
-			temp_prod.append((normalizeScore(temp_score) * weights[t], weights[t]))
+			temp_prod.append((normalizeScore(temp_score) * tasks[t]["weight"], tasks[t]["weight"]))
 	# calc weighted average productivity score
 	daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
 	daily_prod.append((ts, daily_score))

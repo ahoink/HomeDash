@@ -79,7 +79,7 @@
 
 		setWeatherInfo(data["weather"])
 		
-		document.getElementById('sunlight').innerHTML = "<b>Sunlight at back window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
+		document.getElementById('sunlight').innerHTML = "<b>Sunlight at office window: " + data["sunlight"]["start"] + " - " + data["sunlight"]["end"] + "</b>"
 		checkLAN();
 
 		this.setInterval(perUpdate, 3600000) // Update summary every hour
