@@ -102,6 +102,10 @@ function submitNewTask()
 
 function editTask()
 {
+	var dateStr = document.getElementById("e_last").value;
+	var d = new Date(dateStr);
+	document.getElementById("e_last").value = d.getTime() / 1000;
+
 	data = $("#confTaskForm").serialize(); // data entered by user
 	data = "cmd=EDIT&type=Task&"+data;
 	$.ajax({
@@ -163,8 +167,11 @@ function openConfForm(evt)
 			document.getElementById("e_freq").value = data["freq"];
 			document.getElementById("e_cost").value = data["timecost"];
 			document.getElementById("e_wt").value = data["weight"];
-			document.getElementById("e_last").value = data["last"];
 			document.getElementById("e_active").checked = data["isActive"] == "1";
+			
+			var d = new Date(0);
+			d.setUTCSeconds(data["last"]);
+			document.getElementById("e_last").value = d.toLocaleString();//data["last"];
 		}
 	});
 
