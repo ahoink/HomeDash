@@ -20,6 +20,27 @@ exp_proc = ExpenseTracker.ExpenseTracker()
 plant_proc = PlantTracker.PlantTracker()
 coin_proc = CoinTracker.CoinTracker()
 
+def LogEvent(evt):
+	with open("data/Events.log", 'a') as f:
+		f.write("%s\n" % evt)
+
+def ReadLogs():
+	logs = []
+	try:
+		with open("data/Events.log", 'r') as f:
+			logs = f.readlines()
+	except:
+		return ["No logs"]
+
+	for i in range(len(logs)):
+		logs[i] = logs[i].replace("\n", "")
+		if logs[i] == "": continue
+		idx = logs[i].find(" ")
+		epoch = int(logs[i][:idx])
+		ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(epoch))
+		logs[i] = "%s -- %s" % (ts, logs[i][idx+1:])
+	return logs[::-1]
+
 # HELPER FUNCTIONS
 def readConfig():
 	data = []
@@ -165,6 +186,11 @@ def coinsPage():
 	imagestr2 += base64.b64encode(output.getvalue()).decode("utf8")
 	return render_template("coins.html", image=imagestr, image2=imagestr2)
 
+@app.route("/logs")
+def logsPage():
+	data = ReadLogs()
+	return render_template("logs.html", data=data)
+
 @app.route('/favicon.ico')
 def favicon():
 	return send_from_directory("./static", "favicon.png", mimetype="image/png")
@@ -179,6 +205,7 @@ def getLANStatus():
 	hosts = config["hosts"]
 	for h in hosts:
 		data[h] = NetworkTracker.ping(hosts[h])
+
 	return Response(json.dumps(data), mimetype="text/json")
 
 
@@ -206,7 +233,16 @@ def getPlants():
 def postData():
 	cmd = request.form["cmd"]
 	cmdType = request.form["type"]
-	print(cmd, cmdType)
+	res = ""
+
+	# log event
+	event_msg = "%d %s %s" % (time.time(), cmd, cmdType)
+	params = ", ".join(["%s=%s" % (param, request.form[param]) for param in request.form if param != "cmd" and param != "type"])
+	if params != "":
+		event_msg += " | " + params
+	LogEvent(event_msg)
+
+	# handle command
 	if cmd == "ADD":
 		if cmdType == "Task":
 			res = task_proc.addTask(request.form["tname"],
@@ -277,6 +313,10 @@ def postData():
 			res = coin_proc.saveData()
 		else:
 			print("Invalid command type '%s'" % cmdType)
+
+	if isinstance(res, str):
+		LogEvent("%d RES (%s) '%s'" % (time.time(), cmd, res))
+
 	return json.dumps(res)
 
 
