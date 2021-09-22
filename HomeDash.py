@@ -20,6 +20,7 @@ exp_proc = ExpenseTracker.ExpenseTracker()
 plant_proc = PlantTracker.PlantTracker()
 coin_proc = CoinTracker.CoinTracker()
 
+# HELPER FUNCTIONS
 def LogEvent(evt):
 	with open("data/Events.log", 'a') as f:
 		f.write("%s\n" % evt)
@@ -38,10 +39,9 @@ def ReadLogs():
 		idx = logs[i].find(" ")
 		epoch = int(logs[i][:idx])
 		ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(epoch))
-		logs[i] = "%s -- %s" % (ts, logs[i][idx+1:])
+		logs[i] = "%s -- %s" % (ts, logs[i][idx+1:].replace("|", "--"))
 	return logs[::-1]
 
-# HELPER FUNCTIONS
 def readConfig():
 	data = []
 	config = {}
@@ -245,7 +245,16 @@ def postData():
 	# handle command
 	if cmd == "ADD":
 		if cmdType == "Task":
-			res = task_proc.addTask(request.form["tname"],
+			if not request.form["tname"]:
+				res = "Error: Task Name is required"
+			elif not request.form["tfreq"]:
+				res = "Error: Frequency is required"
+			elif not request.form["tcost"]:
+				res = "Error: Time Cost is required"
+			elif not request.form["twt"]:
+				res = "Error: Weight is required"
+			else:
+				res = task_proc.addTask(request.form["tname"],
 									request.form["tfreq"],
 									int(request.form["tcost"]), 
 									int(request.form["twt"]))
@@ -314,8 +323,16 @@ def postData():
 		else:
 			print("Invalid command type '%s'" % cmdType)
 
+	if cmdType == "Task":
+		if "task" in request.form:
+			task_proc.setLastAction("%s %s" % (cmd, request.form["task"]))
+		elif "tname" in request.form:
+			task_proc.setLastAction("%s %s" % (cmd, request.form["tname"]))
+		else:
+			task_proc.setLastAction(cmd)
+
 	if isinstance(res, str):
-		LogEvent("%d RES (%s) '%s'" % (time.time(), cmd, res))
+		LogEvent("%d RES (%s) | '%s'" % (time.time(), cmd, res))
 
 	return json.dumps(res)
 

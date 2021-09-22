@@ -13,6 +13,7 @@ class TaskTracker():
 		self.tasks = readData()
 		self.prev_state = copy.deepcopy(self.tasks)
 		self.init = False
+		self.last_action = ""
 	
 	def scoreTasks(self):
 		# score is the ratio of time since last completed over expected frequency (with a max cap)
@@ -179,12 +180,26 @@ class TaskTracker():
 
 		return "sall good"
 
+	def setLastAction(self, action):
+		self.last_action = action
+
+	def getLastAction(self):
+		return self.last_action
+
 	def revertPrevState(self):
-		if len(self.tasks.keys()) == len(self.prev_state.keys()):
+		if self.last_action == "":
+			return "nothing to undo"
+
+		cmd = self.last_action.split(' ')[0]
+		if cmd == "UPDATE":
+			#if len(self.tasks.keys()) == len(self.prev_state.keys()):
 			remLastStatEntry()
-		self.tasks = copy.deepcopy(self.prev_state)
-		saveData(self.tasks)
-		return "sall good"
+		if cmd == "UPDATE" or cmd == "ADD":
+			self.tasks = copy.deepcopy(self.prev_state)
+			saveData(self.tasks)
+			return "sall good"
+		else:
+			return "nothing to undo"
 
 def readData():
 	tasks = {}

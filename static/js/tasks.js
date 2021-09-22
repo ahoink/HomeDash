@@ -132,9 +132,16 @@ function undoLastAction(evt)
 		url: "/post",
 		type: "post",
 		data: "cmd=UNDO&type=Task",
-		success: function(){
-			alert("Undo Successful - Previous state restored");
-			perUpdate();
+		success: function(res, textStatus){
+			if (res != "\"sall good\"")
+			{
+				alert(res)
+			}
+			else
+			{
+				alert("Undo Successful - Previous state restored");
+				perUpdate();
+			}
 		}
 	});
 }
