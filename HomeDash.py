@@ -64,6 +64,10 @@ def readConfig():
 			config["lon"] = float(splitted[1])
 		elif cat == "angle":
 			config["angle"] = int(splitted[1])
+		elif cat == "angle_adj_lo":
+			config["angle_adj_lo"] = int(splitted[1])
+		elif cat == "angle_adj_up":
+			config["angle_adj_up"] = int(splitted[1])
 		elif cat == "owm_key":
 			config["OWM_KEY"] = splitted[1]
 		elif "elev" in cat:
@@ -112,9 +116,11 @@ def getHomeData(update=False):
 	lat = config["lat"]
 	lon = config["lon"]
 	angle = config["angle"]
-	min_elev = config["min_elev"]
-	max_elev = config["max_elev"]
-	start,end = sun_azimuth.getSunlightTimes(lat, lon, angle, min_elev, max_elev)
+	angle_lo = config.get("angle_adj_lo", 65)
+	angle_up = config.get("angle_adj_up", 65)
+	min_elev = config.get("min_elev", 0)
+	max_elev = config.get("max_elev", 90)
+	start,end = sun_azimuth.getSunlightTimes(lat, lon, angle, angle_lo, angle_up, min_elev, max_elev)
 
 	# get weather data
 	wdata = Weather.formatWeatherData(Weather.getCurrentWeather(lat, lon, config["OWM_KEY"]))

@@ -89,9 +89,9 @@ def getSunAngle(year, month, day, hour, minute, lat, lon):
     if corrected_solar_elev <= 0: return 0, 0 # sun is below horizon, so don't care about position
     return solar_azimuth_angle, solar_elev_angle
 
-def getSunlightTimes(lat, lon, angle, min_elev=0, max_elev=90):
-    lower_lim = angle - 65 # adjustments for obstructions to window
-    upper_lim = angle + 65
+def getSunlightTimes(lat, lon, angle, lower_lim_adjust, upper_lim_adjust, min_elev=0, max_elev=90):
+    lower_lim = angle - lower_lim_adjust # adjustments for obstructions to window
+    upper_lim = angle + upper_lim_adjust
 
     # current data
     today = time.strftime("%d_%m_%Y_%H_%M", time.localtime(time.time()))
