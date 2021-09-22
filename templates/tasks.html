@@ -21,7 +21,7 @@
             <i class="fa fa-bars"></i>
         </a>
     </div>	
-	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);"></table>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);" onMouseOver="handleHover(event);" onMouseOut="handleMouseLeave(event);"></table>
 	<form id="myForm" action="#" method="POST" onsubmit="submitNewTask();return false">
 		<b><u>Add New Task</u></b>
 		<br>
@@ -53,11 +53,11 @@
 			<input type="text" id="e_wt" name="e_wt">
 			<label for="e_last">Last Done</label>
 			<input type="text" id="e_last" name="e_last">
-			<label for"e_active">Active</label>
+			<label for="e_active">Active</label>
 			<input type="checkbox" id="e_active" name="e_active">
 		
-			<button type="submit" class="myButton" style="margin-left: -90px;">Save</button>
-			<button type="button" class="myButton" style="margin-left: 90px;" onClick="closeConfForm()">Cancel</button>
+			<button type="submit" class="myButton">Save</button>
+			<button type="button" class="myButton" onClick="closeConfForm()">Cancel</button>
 		</form>
 	</div>
 

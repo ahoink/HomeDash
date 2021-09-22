@@ -146,15 +146,6 @@ function undoLastAction(evt)
 	});
 }
 
-function configureTracker(evt)
-{
-	window.configureMode = !window.configureMode;
-	if (window.configureMode)
-		document.getElementById("confBtn").src = "static/images/gear.png";
-	else		
-		document.getElementById("confBtn").src = "static/images/gear_grey.png";
-}
-
 function openConfForm(evt)
 {
 
