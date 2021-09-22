@@ -294,11 +294,23 @@ def postData():
 								int(request.form["e_wt"]),
 								int(request.form["e_last"]),
 								"e_active" in request.form)
+		elif cmdType == "Expense":
+			if not request.form["e_amt"]:
+				res = "Error: Amount is required"
+			else:
+				res = exp_proc.editExpense(
+								request.form["e_name"],
+								float(request.form["e_amt"]),
+								request.form["e_due"],
+								"e_auto" in request.form,
+								"e_vari" in request.form)
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "GET":
 		if cmdType == "Task":
 			res = task_proc.getTaskInfo(request.form["task"])
+		elif cmdType == "Expense":
+			res = exp_proc.getExpenseInfo(request.form["exp"])
 		else:
 			print("Invalid command type '%s'" % cmdType)
 	elif cmd == "UNDO":

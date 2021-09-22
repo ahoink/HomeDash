@@ -21,7 +21,7 @@
             <i class="fa fa-bars"></i>
         </a>
     </div>
-	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);"></table>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);" onMouseOver="handleHover(event);" onMouseOut="handleMouseLeave(event);"></table>
 	<form id="myForm" action="#" method="POST" onsubmit="submitNewExp();return false">
 		<b><u>Add New Expense</u></b>
 		<br>
@@ -39,7 +39,27 @@
 		<input type="submit" class="myButton" id="tsubmit" value="Submit">
 	</form>
 	<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>
+	<div class="form-popup" id="confExpense">
+		<form class="form-container" id="confExpForm" action="#" method="POST" onsubmit="editExpense();return false">
+			<h1>Edit Expense</h1>
+			<label for="e_name">Expense Name</label>
+			<input type="text" id="e_name" name="e_name">
+			<label for="e_amt">Amount ($)</label>
+			<input type="text" id="e_amt" name="e_amt">
+			<label for="e_due">Due (DOM)</label>
+			<input type="text" id="e_due" name="e_due">
+			<label for="e_auto">Autopay</label>
+			<input type="checkbox" id="e_auto" name="e_auto">
+			<label for="e_vari">Variable</label>
+			<input type="checkbox" id="e_vari" name="e_vari">
 
+			<button type="submit" class="myButton">Save</button>
+			<button type="button" class="myButton" onClick="closeConfForm()">Cancel</button>
+		</form>
+	</div>
+
+	<img id="confBtn" src="static/images/gear_grey.png" alt="gear.png" width="64" height="64" onClick="configureTracker(event);">
+	<br>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="expense plot">
     <pre id="txtarea"><b>Expense Stats</b></pre>
 	<script src="static/js/expenses.js"></script>
@@ -51,6 +71,7 @@
 
 		displayStats()
         constructTable('#table', data)
+		window.configureMode = false;
 		
 	</script>
   </body>

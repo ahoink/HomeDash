@@ -65,25 +65,30 @@ function Headers(list, selector)
 
 function handleClick(evt)
 {
-	var node = evt.target || evt.srcElement;
-	var idx = node.parentNode.rowIndex - 1;
-	var name = String(node.parentNode.childNodes[0].innerText);
-	var amount = null;
-	if (node.parentNode.tabIndex == 1) {
-		amount = prompt("Enter the amount", "");
-		if (amount == null) return;
+	if (window.configureMode) {
+		openConfForm(evt);
 	}
-	$.ajax({
-		url: "/post",
-		type: "post",
-		data: "cmd=UPDATE&type=Expense&exp="+name+"&amount="+amount,
-		success: function(data, textStatus, res) {
-			data = $.parseJSON(data);
-			node.parentNode.childNodes[1].innerText="$" + data[1]; // amount
-			node.parentNode.childNodes[2].innerText=data[0]; // due date
-			node.parentElement.style.backgroundColor="#80FF80";
+	else {
+		var node = evt.target || evt.srcElement;
+		var idx = node.parentNode.rowIndex - 1;
+		var name = String(node.parentNode.childNodes[0].innerText);
+		var amount = null;
+		if (node.parentNode.tabIndex == 1) {
+			amount = prompt("Enter the amount", "");
+			if (amount == null) return;
 		}
-	});
+		$.ajax({
+			url: "/post",
+			type: "post",
+			data: "cmd=UPDATE&type=Expense&exp="+name+"&amount="+amount,
+			success: function(data, textStatus, res) {
+				data = $.parseJSON(data);
+				node.parentNode.childNodes[1].innerText="$" + data[1]; // amount
+				node.parentNode.childNodes[2].innerText=data[0]; // due date
+				node.parentElement.style.backgroundColor="#80FF80";
+			}
+		});
+	}
 }
 
 function submitNewExp()
@@ -110,6 +115,65 @@ function submitNewExp()
 			}
 		}
 	});
+}
+
+function editExpense()
+{
+	data = $("#confExpForm").serialize();
+	data = "cmd=EDIT&type=Expense&"+data;
+	$.ajax({
+			url: "/post",
+			type: "post",
+			data: data,
+			success: function(res, textStatus){
+				if (res != "\"sall good\"")
+				{
+					alert(res);
+				}
+				else
+				{
+					closeConfForm();
+					alert("Successfully modified expense");
+				}
+			}
+	});
+}
+
+function openConfForm(evt)
+{
+	if (document.getElementById("confExpense").style.display == "block")
+		return;
+
+	var node = evt.target || evt.srcElement;
+	var idx = node.parentNode.rowIndex - 1;
+	var name = String(node.parentNode.childNodes[0].innerText);
+
+	$.ajax({
+			url: "/post",
+			type: "post",
+			data: "cmd=GET&type=Expense&exp="+name,
+			success: function(data, textStatus, res){
+				data = $.parseJSON(data);
+				document.getElementById("e_name").value = name;
+				document.getElementById("e_amt").value = data["amount"];
+				document.getElementById("e_due").value = data["due"];
+				document.getElementById("e_auto").checked = data["autopay"];
+				document.getElementById("e_vari").checked = data["variable"];
+			}
+	});
+
+	document.getElementById("confExpense").style.display = "block";
+
+}
+
+function closeConfForm()
+{
+	document.getElementById("e_name").value = "";
+	document.getElementById("e_amt").value = "";
+	document.getElementById("e_due").value = "";
+	document.getElementById("e_auto").checked = false;
+	document.getElementById("e_vari").checked = false;
+	document.getElementById("confExpense").style.display = "None";
 }
 
 function undoLastAction(evt)

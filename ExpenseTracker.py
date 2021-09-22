@@ -47,6 +47,11 @@ class ExpenseTracker():
 		color = "black"
 		return {"val": "$%.2f" % balance, "color": color}
 
+	def getExpenseInfo(self, exp_name):
+		temp = dict(self.expenses[exp_name])
+		temp["due"] = time.strftime("%d", time.localtime(temp["due"]))
+		return temp
+
 	def getColorFromDate(self, t):
 		# generate hex string of color based on the score (lowest RGB value is 128 so the color is lighter and softer)
 		# Start as green and fade to yellow as score approaches half of the max score
@@ -132,6 +137,27 @@ class ExpenseTracker():
 
 		resp = [time.strftime("%b %d", time.localtime(self.expenses[exp_name]["due"])), self.expenses[exp_name]["amount"]]
 		return resp
+
+	def editExpense(self, name, amount, due, isAuto, isVari):
+		if not name or name not in self.expenses:
+			return "Invalid Name"
+
+		if not due or (not due.isdigit() and due.lower() != "eom"):
+			return "Invalid Due Date"
+		
+		if due.lower() == "eom":
+			due = 30 # TODO: make EOM functional to always use the last day of a given month
+		
+		self.prev_state = copy.deepcopy(self.expenses)
+		
+		self.expenses[name]["amount"] = amount
+		self.expenses[name]["due"] = dateNumToTimestamp(int(due))
+		self.expenses[name]["autopay"] = isAuto
+		self.expenses[name]["variable"] = isVari
+
+		saveData(self.expenses)
+
+		return "sall good"
 
 	def revertPrevState(self):
 		if len(self.expenses.keys()) == len(self.prev_state.keys()):
