@@ -113,8 +113,17 @@ def getSunlightTimes(lat, lon, angle, lower_lim_adjust, upper_lim_adjust, min_el
         azimuth, elev = getSunAngle(year, month, day, hour, minute, lat, lon)
     nearDirectStart = "%02d:%02d" % (hour, minute)
 
+    prev_elev = 0
+    while elev > prev_elev:
+        minute += 1
+        if minute >= 60:
+            minute = 0
+            hour += 1
+        prev_elev = elev
+        azimuth, elev = getSunAngle(year, month, day, hour, minute, lat, lon)
+
     # find upper limit of "near-direct" sunlight
-    while azimuth < upper_lim and azimuth != 0 and elev > min_elev: # azimuth = 0 means sun has set
+    while azimuth < upper_lim and azimuth != 0 and elev > min_elev:
         minute += 1
         if minute >= 60:
             minute = 0
