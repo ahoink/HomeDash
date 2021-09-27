@@ -5,6 +5,8 @@ table.stylized {
   width: 360px;
   text-align: center;
   border-collapse: collapse;
+  border-right: none;
+  border-left: none;
   margin: 0 10 0 0;
 }
 table.stylized td, table.stylized th {
