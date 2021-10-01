@@ -67,22 +67,28 @@ class PlantTracker():
 	
 	def updatePlant(self, plant_name):
 		tnow = int(time.time())
+		status = "OK"
+
 		# get sublist from plant list where name matches plant_name and get the index of that sublist
 		sublist = [x for x in self.plants if x[0] == plant_name][0]
 		idx = self.plants.index(sublist)
 
-		# save the current state before updating
-		self.prev_state = [[x for x in y] for y in self.plants]
+		if (tnow - self.plants[idx][1]) > 86400:
 
-		# update plant last completed time and save to file
-		self.plants[idx][1] = tnow
-		saveData(self.plants)
-		writeUpdate(plant_name, tnow)
+			# save the current state before updating
+			self.prev_state = [[x for x in y] for y in self.plants]
 
-		# recalc avg frequencies
-		self.freqs = getFreqs()
+			# update plant last completed time and save to file
+			self.plants[idx][1] = tnow
+			saveData(self.plants)
+			writeUpdate(plant_name, tnow)
 
-		resp = [time.strftime("%b %d", time.localtime(tnow))]
+			# recalc avg frequencies
+			self.freqs = getFreqs()
+		else:
+			status = "DUPLICATE"
+
+		resp = [time.strftime("%b %d", time.localtime(tnow)), status]
 		return resp
 
 	def revertPrevState(self):

@@ -22,7 +22,7 @@ class ExpenseTracker():
 			temp = {}
 			#due_date = ""
 			expense = self.expenses[e]
-			if expense["autopay"] and tnow > expense["due"] + 86400:	# autopay enabled and past due
+			if expense["autopay"] and tnow > expense["due"] + 43200:	# autopay enabled and past due
 				if expense["variable"]: # variable, ask user for amount via javascript
 					auto_var.append(e)
 				else: # not variable, simply update as usual and reset the timestamp
@@ -113,29 +113,27 @@ class ExpenseTracker():
 	
 	def updateExpense(self, exp_name, amount=None, ret_ts=False):
 		tnow = time.time()
+		status = "OK"
+		if abs(tnow - self.expenses[exp_name]["due"]) < 28*86400:			
 		
-		# CC, remove tracked expenses that are paid on CC
-		if exp_name == "Amazon CC":
-			pass
-			#templist = [x for x in self.expenses if x[0] == "Internet"][0]
-			#amount = float(amount) - float(templist[1])
+			# save the current state before updating
+			self.prev_state = copy.deepcopy(self.expenses)
 
-		# save the current state before updating
-		self.prev_state = copy.deepcopy(self.expenses)
+			# save the expense and score upon completion to the stats file
+			if amount != None and amount != "null":
+				self.expenses[exp_name]["amount"] = float(amount)
+			saveStats(exp_name, self.expenses[exp_name], tnow)
 
-		# save the expense and score upon completion to the stats file
-		if amount != None and amount != "null":
-			self.expenses[exp_name]["amount"] = float(amount)
-		saveStats(exp_name, self.expenses[exp_name], tnow)
-
-		# update expense last completed time and save to file
-		self.expenses[exp_name]["due"] = self.incrementDate(self.expenses[exp_name]["due"])
-		saveData(self.expenses)
+			# update expense last completed time and save to file
+			self.expenses[exp_name]["due"] = self.incrementDate(self.expenses[exp_name]["due"])
+			saveData(self.expenses)
+		else:
+			status = "DUPLICATE"
 		
 		# return epoch timestamp		
 		if ret_ts: return self.expenses[exp_name]["due"]
 
-		resp = [time.strftime("%b %d", time.localtime(self.expenses[exp_name]["due"])), self.expenses[exp_name]["amount"]]
+		resp = [time.strftime("%b %d", time.localtime(self.expenses[exp_name]["due"])), self.expenses[exp_name]["amount"], status]
 		return resp
 
 	def editExpense(self, name, amount, due, isAuto, isVari):

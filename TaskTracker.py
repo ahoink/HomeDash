@@ -123,22 +123,23 @@ class TaskTracker():
 	
 	def updateTask(self, task_name):
 		tnow = time.time()
-		self.scoreTasks()
-		# get sublist from task list where name matches task_name and get the index of that sublist
-		#sublist = [x for x in self.tasks if x[0] == task_name][0]
-		#idx = self.tasks.index(sublist)
+		status = "OK"
+		if (tnow - self.tasks[task_name]["last"]) > 86400:
 
-		# save the current state before updating
-		self.prev_state = copy.deepcopy(self.tasks)
+			self.scoreTasks()
 
-		# save the task and score upon completion to the stats file
-		saveStats(task_name, self.tasks[task_name], tnow)
+			# save the current state before updating
+			self.prev_state = copy.deepcopy(self.tasks)
 
-		# update task last completed time and save to file
-		self.tasks[task_name]["last"] = tnow
-		saveData(self.tasks)
+			# save the task and score upon completion to the stats file
+			saveStats(task_name, self.tasks[task_name], tnow)
 
-		resp = [time.strftime("%b %d", time.localtime(tnow)), "DONE"]
+			# update task last completed time and save to file
+			self.tasks[task_name]["last"] = tnow
+			saveData(self.tasks)
+		else:
+			status = "DUPLICATE"
+		resp = [time.strftime("%b %d", time.localtime(tnow)), "DONE", status]
 		return resp
 
 	def editTask(self, name, freq, cost, wt, last, isActive):
