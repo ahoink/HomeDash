@@ -28,7 +28,7 @@ class PlantTracker():
 		self.scorePlants()
 		plnts = []
 		hdrs = ["Plant", "Last Watered", "Frequency"]
-		sorted_plants = sorted(self.plants, key=lambda x: x[0], reverse=True) # sort by name
+		sorted_plants = sorted(self.plants, key=lambda x: x[0]) # sort by name
 		for p in sorted_plants:
 			temp = {}
 			temp[hdrs[0]] = p[0] 											# Plant name
