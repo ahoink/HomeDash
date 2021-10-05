@@ -177,7 +177,8 @@ class TaskTracker():
 		self.tasks[name]["isActive"] = isActive
 
 		saveData(self.tasks)
-		editLastCompletedTime(name, last)
+		if last != self.prev_state[name]["last"]:
+			editLastCompletedTime(name, last)
 
 		return "sall good"
 
@@ -298,6 +299,7 @@ def processStatsData(data, tasks, retDaily=True):
 	completed = []
 	tot_score = 0.0
 	curr_date = datetime.fromtimestamp(time.time())
+	today_dt = datetime.fromtimestamp(time.time())
 	past_year = curr_date - timedelta(days=365)
 	task_stats = {}
 	days_stats = {}
@@ -362,7 +364,7 @@ def processStatsData(data, tasks, retDaily=True):
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 
 	# get daily score for today
-	ts = datetime.timestamp(dt)
+	ts = datetime.timestamp(today_dt)
 	temp_prod = productivity[-WMA_INT:]
 	# account for overdue tasks
 	for t in tasks:
@@ -384,21 +386,8 @@ def plotStats():
 	stat_data = readStats()
 	task_data = readData()
 	productivity, days_stats, task_stats = processStatsData(stat_data, task_data)
+
 	ma = []
-	dys = 7
-	#wt = 2/(dys+1)
-	wt = 1/dys
-	
-	# ema
-	#ma.append(sum(productivity[:5])/5)
-	#for i in range(5, len(productivity)):
-	#	ema = productivity[i] * wt + ma[-1] * (1-wt)
-	#	ma.append(ema)
-	
-	# sma
-	#for i in range(WMA_INT, len(productivity)+1):
-	#	last5avg = sum([p[0] for p in productivity[i-WMA_INT:i]]) / sum([p[1] for p in productivity[i-WMA_INT:i]])
-	#	ma.append(last5avg)
 	ma = [p[1] for p in productivity]
 
 	# create xtick points and labels for the start of each month
