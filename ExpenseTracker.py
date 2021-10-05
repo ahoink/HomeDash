@@ -287,7 +287,7 @@ def plotStats():
 		plt.text(i-0.4, v+15, "$%d" % (v+0.5))
 	plt.plot([-1, len(vals)], [avg_monthly, avg_monthly], color="red", linestyle="--", linewidth=0.5)
 	plt.xlim((-0.5, len(vals)-0.5))
-	plt.text(-0.5-45/(496/span), avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	
+	plt.text(span-40/(496/span), avg_monthly, "$%d" % (avg_monthly+0.5), color="red")	# accurate spacing regardless of span
 
 	return fig, js_stats
 
