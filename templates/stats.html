@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Productivity Stats</title>
+	<title>Productivity Stats</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -8,19 +8,20 @@
   </head>
   <body>
 	<div class="topnav">
-        <li><a class="active" href="/stats">Stats</a></li>
-        <div id="navlinks">
+		<li><a class="active" href="/stats">Stats</a></li>
+		<div id="navlinks">
 			<li><a href="/">Home</a></li>
-            <li><a href="/tasks">Tasks</a></li>
-            <li><a href="/expenses">Expenses</a></li>
-            <li><a href="/plants">Plants</a></li>
-            <li><a href="/coins">Coins</a></li>
-            <li><a href="/logs">Logs</a></li>
-        </div>
-        <a href="javascript:void(0);" class="icon" onclick="hamburger()">
-            <i class="fa fa-bars"></i>
-        </a>
-    </div>
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/expenses">Expenses</a></li>
+			<li><a href="/plants">Plants</a></li>
+			<li><a href="/investments">Investments</a></li>
+			<li><a href="/coins">Coins</a></li>
+			<li><a href="/logs">Logs</a></li>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="productivity plot">
 	<!--<textarea id="ts_output" rows=12 cols=25 readonly>Task Stats</textarea>-->
 	<pre id="txtarea"><b>Task Stats</b></pre>

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Productivity Server</title>
+	<title>Productivity Server</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -8,19 +8,20 @@
   </head>
   <body>
 	<div class="topnav">
-        <li><a class="active" href="/expenses">Expenses</a></li>
-        <div id="navlinks">
+		<li><a class="active" href="/expenses">Expenses</a></li>
+		<div id="navlinks">
 			<li><a href="/">Home</a></li>
-            <li><a href="/tasks">Tasks</a></li>
-            <li><a href="/plants">Plants</a></li>
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/plants">Plants</a></li>
 			<li><a href="/stats">Stats</a></li>
+			<li><a href="/investments">Investments</a></li>
 			<li><a href="/coins">Coins</a></li>
 			<li><a href="/logs">Logs</a></li>
-        </div>
-        <a href="javascript:void(0);" class="icon" onclick="hamburger()">
-            <i class="fa fa-bars"></i>
-        </a>
-    </div>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
 	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);" onMouseOver="handleHover(event);" onMouseOut="handleMouseLeave(event);"></table>
 	<form id="myForm" action="#" method="POST" onsubmit="submitNewExp();return false">
 		<b><u>Add New Expense</u></b>
@@ -61,16 +62,16 @@
 	<img id="confBtn" src="static/images/gear_grey.png" alt="gear.png" width="64" height="64" onClick="configureTracker(event);">
 	<br>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="expense plot">
-    <pre id="txtarea"><b>Expense Stats</b></pre>
+	<pre id="txtarea"><b>Expense Stats</b></pre>
 	<script src="static/js/expenses.js"></script>
 	<script src="static/js/common.js"></script>
 	<script>
 		var data = JSON.parse('{{ data | tojson | safe}}');
 		var stats = JSON.parse('{{ stats | tojson | safe}}');
-        var txt = document.getElementById("txtarea");
+		var txt = document.getElementById("txtarea");
 
 		displayStats()
-        constructTable('#table', data)
+		constructTable('#table', data)
 		window.configureMode = false;
 		
 	</script>

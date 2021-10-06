@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Productivity Server</title>
+	<title>Productivity Server</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -8,39 +8,40 @@
   </head>
   <body>
 	<div class="topnav">
-        <li><a class="active" href="/coins">Coins</a></li>
-        <div id="navlinks">
-            <li><a href="/">Home</a></li>
-            <li><a href="/tasks">Tasks</a></li>
-            <li><a href="/expenses">Expenses</a></li>
+		<li><a class="active" href="/coins">Coins</a></li>
+		<div id="navlinks">
+			<li><a href="/">Home</a></li>
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/expenses">Expenses</a></li>
 			<li><a href="/plants">Plants</a></li>
-            <li><a href="/stats">Stats</a></li>
-            <li><a href="/logs">Logs</a></li>
-        </div>
-        <a href="javascript:void(0);" class="icon" onclick="hamburger()">
-            <i class="fa fa-bars"></i>
-        </a>
-    </div>
+			<li><a href="/stats">Stats</a></li>
+			<li><a href="/investments">Investments</a></li>
+			<li><a href="/logs">Logs</a></li>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
 	<form id="myForm" action="#" method="POST" onsubmit="submitCoin();return false">
-        <b><u>Add Coin</u></b>
-        <br>
-        Year:
-        <input type="number" id="cyear" name="year" size="15">
+		<b><u>Add Coin</u></b>
+		<br>
+		Year:
+		<input type="number" id="cyear" name="year" size="15">
 		<br>
 		<br>
 		Mint Mark:
 		<br>
 		<input type="radio" id="none" name="mintmark" value="" checked>
 		<label for="none">None</label>
-        <br>
+		<br>
 		<input type="radio" id="denver" name="mintmark" value="D">
 		<label for="denver">D</label>
 		<br>
 		<input type="radio" id="sanfran" name="mintmark" value="S">
 		<label for="sanfran">S</label>
 		<br>
-        <input type="submit" class="myButton" id="csubmit" value="Submit">
-    </form>
+		<input type="submit" class="myButton" id="csubmit" value="Submit">
+	</form>
 	<pre id="submit_status"></pre>
 	<button type="button" class="stylized" id="saveBtn" onClick="saveCoinData(event);">Save</button>
 	<br>
