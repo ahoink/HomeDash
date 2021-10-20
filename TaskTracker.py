@@ -346,6 +346,7 @@ def processStatsData(data, tasks, retDaily=True):
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 		# fill in gaps in daily productivity
 		else:
+			productivity.append((prod_score * task_weight, task_weight))
 			while dt > curr_date:
 				ts = datetime.timestamp(curr_date)
 				temp_prod = productivity[-WMA_INT:]
@@ -360,7 +361,6 @@ def processStatsData(data, tasks, retDaily=True):
 				daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
 				daily_prod.append((ts, daily_score))
 				curr_date += timedelta(days=1)
-			productivity.append((prod_score * task_weight, task_weight))
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 
 	# get daily score for today
