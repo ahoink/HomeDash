@@ -1,0 +1,77 @@
+<html>
+  <head>
+	<title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable="no" >
+  </head>
+  <body>
+	<div class="topnav">
+		<li><a class="active" href="/investments">Investments</a></li>
+		<div id="navlinks">
+			<li><a href="/">Home</a></li>
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/expenses">Expenses</a></li>
+			<li><a href="/plants">Plants</a></li>
+			<li><a href="/stats">Stats</a></li>
+			<li><a href="/coins">Coins</a></li>
+			<li><a href="/logs">Logs</a></li>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
+	<table class="stylized" align="left" id="table" border="1" onClick="handleClick(event);" onMouseOver="handleHover(event);" onMouseOut="handleMouseLeave(event);"></table>
+	<form id="myForm" action="#" method="POST" onsubmit="submitNewInvest();return false">
+		<b><u>Add Investment</u></b>
+		<br>
+		<label for="name">Asset Name:</label><input type="text" id="name" name="name" size="15">
+		<br>
+		<label for="sym">Symbol:</label><input type="text" id="sym" name="sym" size="3">
+		<br>
+		<label for="qnt">Quantity:</label><input type="text" id="qnt" name="qnt" size="3">
+		<br>
+		<label for="amt">Amount ($):</label><input type="text" id="amt" name="amt" size="7">
+		<br>
+		<label for="atype">Type:</label><select id="atype" name="atype" size="1">
+			<option value="stock">Stock</option>
+			<option value="crypto">Crypto</option>
+			<option value="other">Other</option>
+		</select>
+		<input type="submit" class="myButton" id="tsubmit" value="Submit">
+	</form>
+	<!---<button type="button" class="stylized" id="undoBtn" onClick="undoLastAction(event);">Undo</button>-->
+	<div class="form-popup" id="confInvest">
+		<form class="form-container" id="confInvForm" action="#" method="POST" onsubmit="editInvestment();return false">
+			<h1>Edit Investment</h1>
+			<label for="i_name">Asset Name</label>
+			<input type="text" id="i_name" name="i_name">
+			<label for="i_amt">Amount ($)</label>
+			<input type="text" id="i_amt" name="i_amt">
+			<label for="i_qnt">Quantity</label>
+			<input type="text" id="i_qnt" name="i_qnt">
+			<label for="i_type">Type:</label><select id="i_type" name="i_type" size="1">
+				<option value="stock">Stock</option>
+				<option value="crypto">Crypto</option>
+				<option value="other">Other</option>
+			</select>
+			<button type="submit" class="myButton">Save</button>
+			<button type="button" class="myButton" onClick="closeConfForm()">Cancel</button>
+		</form>
+	</div>
+
+	<img id="confBtn" src="static/images/gear_grey.png" alt="gear.png" width="64" height="64" onClick="configureTracker(event);">
+	<br>
+	<img src={{ image }} style="max-width:100%;height:auto;" alt="portfolio performance plot">
+	<img src={{ image2 }} style="max-width:100%;height:auto;" alt="portfolio pie chart">
+	<script src="static/js/investments.js"></script>
+	<script src="static/js/common.js"></script>
+	<script>
+		var data = JSON.parse('{{ data | tojson | safe}}');
+		constructTable('#table', data)
+		window.configureMode = false;
+		
+	</script>
+  </body>
+</html>

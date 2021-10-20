@@ -8,6 +8,7 @@ import time
 
 import TaskTracker
 import ExpenseTracker
+import StonkTracker
 import sun_azimuth
 import NetworkTracker
 import PlantTracker
@@ -17,6 +18,7 @@ import CoinTracker
 app = Flask(__name__)
 task_proc = TaskTracker.TaskTracker()
 exp_proc = ExpenseTracker.ExpenseTracker()
+inv_proc = StonkTracker.StonkTracker()
 plant_proc = PlantTracker.PlantTracker()
 coin_proc = CoinTracker.CoinTracker()
 
@@ -72,12 +74,16 @@ def readConfig():
 			config["OWM_KEY"] = splitted[1]
 		elif "elev" in cat:
 			config[cat] = int(splitted[1])
+		elif cat == "login":
+			config["user"] = splitted[1]
+			config["pass"] = splitted[2]
 		else:
 			print("Unknown category '%s'" % cat) 
 	return config
 
 def check_auth(username, password):
-    return username == "" and password == ""
+	config = readConfig()
+	return username == config["user"] and password == config["pass"]
 
 # MAIN FUNCTIONS
 def authenticate():
@@ -168,6 +174,25 @@ def expensePage():
 	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
 	return render_template("expenses.html", data=data, image=imagestr, stats=stats)
 
+@app.route("/investments")
+@requires_auth
+def investmentPage():
+	data = inv_proc.getPortfolio()
+	fig = StonkTracker.plotStats(inv_proc.getNetWorth())
+	fig2 = StonkTracker.portfolioPieChart(inv_proc.getAllocations())
+
+	output = io.BytesIO()
+	FigureCanvas(fig).print_png(output)
+	imagestr = "data:image/png;base64,"
+	imagestr += base64.b64encode(output.getvalue()).decode("utf8")	
+
+	output = io.BytesIO()
+	FigureCanvas(fig2).print_png(output)
+	imagestr2 = "data:image/png;base64,"
+	imagestr2 += base64.b64encode(output.getvalue()).decode("utf8")
+
+	return render_template("investments.html", data=data, image=imagestr, image2=imagestr2)
+
 @app.route("/plants")
 def plantsPage():
 	data = plant_proc.getPlantList()
@@ -235,6 +260,11 @@ def getPlants():
 	data = plant_proc.getPlantList()
 	return Response(json.dumps(data), mimetype="text/json")
 
+@app.route("/getinv", methods=["GET"])
+def getInv():
+	data = inv_proc.getPortfolio()
+	return Response(json.dumps(data), mimetype="text/json")
+
 @app.route("/post", methods=["POST"])
 def postData():
 	cmd = request.form["cmd"]
@@ -249,6 +279,7 @@ def postData():
 	LogEvent(event_msg)
 
 	# handle command
+	# ----- ADD ----- #
 	if cmd == "ADD":
 		if cmdType == "Task":
 			if not request.form["tname"]:
@@ -272,12 +303,20 @@ def postData():
 										request.form["due"],
 										autopay,
 										isvar)
+		elif cmdType == "Investment":
+			res = inv_proc.addInvestment(request.form["name"], 
+										request.form["sym"],
+										float(request.form["qnt"]),
+										float(request.form["amt"]),
+										request.form["atype"])
 		elif cmdType == "Plant":
 			res = plant_proc.addPlant(request.form["pname"])
 		elif cmdType == "Coin":
 			res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
 		else:
-			print("Invalid command type '%s'" % cmdType)
+			res = "Invalid command type '%s'" % cmdType
+			print(res)
+	# ----- EDIT ----- #
 	elif cmd == "EDIT":
 		if cmdType == "Task":
 			if not request.form["e_cost"]:
@@ -304,15 +343,31 @@ def postData():
 								request.form["e_due"],
 								"e_auto" in request.form,
 								"e_vari" in request.form)
+		elif cmdType == "Investment":
+			if not request.form["i_qnt"]:
+				res = "Error: Quantity is required"
+			elif not request.form["i_amt"]:
+				res = "Error: Amount is required"
+			else:
+				res = inv_proc.editInvestment(
+								request.form["i_name"],
+								float(request.form["i_qnt"]),
+								float(request.form["i_amt"]))
 		else:
-			print("Invalid command type '%s'" % cmdType)
+			res = "Invalid command type '%s'" % cmdType
+			print(res)
+	# ----- GET (info) ----- #
 	elif cmd == "GET":
 		if cmdType == "Task":
 			res = task_proc.getTaskInfo(request.form["task"])
 		elif cmdType == "Expense":
 			res = exp_proc.getExpenseInfo(request.form["exp"])
+		elif cmdType == "Investment":
+			res = inv_proc.getInvestmentInfo(request.form["inv"])
 		else:
-			print("Invalid command type '%s'" % cmdType)
+			res = "Invalid command type '%s'" % cmdType
+			print(res)
+	# ----- UNDO ----- #
 	elif cmd == "UNDO":
 		if cmdType == "Task":
 			res = task_proc.revertPrevState()
@@ -323,7 +378,9 @@ def postData():
 		elif cmdType == "Coin":
 			res = coin_proc.revertPrevState()
 		else:
-			print("Invalid command type '%s'" % cmdType)
+			res = "Invalid command type '%s'" % cmdType
+			print(res)
+	# ----- UPDATE ----- #
 	elif cmd == "UPDATE":
 		if cmdType == "Task":
 			task_name = request.form["task"]
@@ -339,8 +396,10 @@ def postData():
 		elif cmdType == "Coin":
 			res = coin_proc.saveData()
 		else:
-			print("Invalid command type '%s'" % cmdType)
+			res = "Invalid command type '%s'" % cmdType
+			print(res)
 
+	# Set action for next UNDO command
 	if cmdType == "Task":
 		if "task" in request.form:
 			task_proc.setLastAction("%s %s" % (cmd, request.form["task"]))
@@ -351,7 +410,8 @@ def postData():
 
 	if isinstance(res, str):
 		LogEvent("%d RES (%s) | '%s'" % (time.time(), cmd, res))
-
+	elif isinstance(res, list):
+		LogEvent("%d RES (%s) | %s" % (time.time(), cmd, res[-1]))
 	return json.dumps(res)
 
 

@@ -82,6 +82,15 @@ label {
 	text-align:left;
 }
 
+select {
+	width: 70px;
+	display: inline-block;
+	padding: 5 5 5 0;
+	margin: 5 0 0 0;
+	border: 1px solid gray;
+}
+
+
 /* Pop-up user input form */
 .form-popup {
 	display: none;
@@ -110,6 +119,15 @@ label {
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 10px;
+	border: none;
+	background: #ffffff;
+}
+
+.form-container select {
+	width: 100px;
+	display: block;
+	padding: 5 10 5 0;
+	margin: 0 0 0 10;
 	border: none;
 	background: #ffffff;
 }
