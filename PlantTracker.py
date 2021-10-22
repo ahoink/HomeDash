@@ -24,7 +24,7 @@ class PlantTracker():
 			else: self.plants[i][-1] = score
 		self.init = True
 
-	def getPlantList(self):
+	def getPlantList(self, watchOnly=False):
 		self.scorePlants()
 		plnts = []
 		hdrs = ["Plant", "Last Watered", "Frequency"]
@@ -35,6 +35,7 @@ class PlantTracker():
 			temp[hdrs[1]] = time.strftime("%b %d", time.localtime(p[1]))	# Last watered (Month Date)
 			temp[hdrs[2]] = secToTimeString(self.freqs.get(p[0], 0))		# Avg watering frequency
 			temp["Color"] = self.getColorFromScore(p[-1])					# Color hex code
+			if watchOnly and p[-1] < 0.95: continue
 			plnts.append(temp)	
 		return {"Headers":hdrs, "Plants":plnts}
 

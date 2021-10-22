@@ -28,12 +28,15 @@
 	<a id="prod_val" href="/stats" style="text-decoration:none"><b>0%</b></a>
 	<pre id="expenses"><b>Remaining Expenses this Month</b></pre>
 	<pre id="exp_val"><b>$0.00</b></pre>
+	<!--<a id="due_today" href="/tasks" style="text-decoration:none"><b>Tasks Due Today</b></a>-->
 	<pre id="due_today"><b>Tasks Due Today</b></pre>
 	<table class="stylized" id="table" border="1" onClick="handleClick(event);"></table>
 	<hr>
 	<pre id="exp_due_week"><b>Expenses this Week</b></pre>
 	<table class="stylized" id="table2" border="1"></table>	
-	
+	<hr>
+	<pre id="plant_watch"><b>Plant Watch</b></pre>
+	<table class="stylized" id="table3" border="1"></table>
 	<hr>
 	<pre id="lan_status"><b><u>LAN Status</u></b></pre>
 	<div id="lan_hosts">Loading...</div>
@@ -78,6 +81,7 @@
 		setTextFromData('exp_val', data["exp"]);
 		constructTable('#table', data["tasks"], "Tasks");
 		constructTable('#table2', data["expenses"], "Expenses");
+		constructTable('#table3', data["plants"], "Plants");
 
 		setWeatherInfo(data["weather"])
 		

@@ -61,6 +61,8 @@ function constructTable(selector, data, type)
 			document.getElementById('due_today').innerHTML = "<b>No Tasks Due Today!</b>";
 		else if (type == "Expenses")
 			document.getElementById('exp_due_week').innerHTML = "<b>No Expenses Due this Week!</b>";
+		else if (type == "Plants")
+			document.getElementById('plant_watch').innerHTML = "<b>Plants are happy!<b>";
 		return;
 	}
 	var cols = Headers(hdrs, selector); // extract columns from headers

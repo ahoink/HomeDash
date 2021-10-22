@@ -106,6 +106,7 @@ def getHomeData(update=False):
 	data = {}
 	tdata = task_proc.getTaskList(todayOnly=True)
 	exdata = exp_proc.getExpenseList(weekOnly=True)
+	pldata = plant_proc.getPlantList(watchOnly=True)
 	pdata = task_proc.getProductivity()
 	edata = exp_proc.getBalance()
 	wdata = {}
@@ -134,6 +135,7 @@ def getHomeData(update=False):
 	# combine all data objects
 	data["tasks"] = tdata
 	data["expenses"] = exdata
+	data["plants"] = pldata
 	data["prod"] = pdata
 	data["exp"] = edata
 	if not update: data["sunlight"] = {"start": start, "end": end}
