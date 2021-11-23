@@ -422,15 +422,16 @@ def plotStats():
 	return fig, getStatsAvgBreakdown(task_stats)
 
 def getStatsAvgBreakdown(task_stats=None, sorting=0):
+	task_data = readData()
 	if task_stats == None:
 		data = readStats()
-		task_data = readData()
 		productivity, days_stats, task_stats = processStatsData(data, task_data)
 	# create javascript-friendly dict (to be read as JSON)
 	avg_stats = []
 	hdrs = ["Task", "Avg Score", "Most Frequent Day", "Avg Frequency"]
 	task_names = sorted(task_stats.keys())	# order alphabetically
 	for t in task_names:
+		if t not in task_data or not task_data[t]["isActive"]: continue
 		avgscore = task_stats[t]["score"] / task_stats[t]["completed"]
 		top_day = max(set(task_stats[t]["days"]), key=task_stats[t]["days"].count)
 		day_ratio = task_stats[t]["days"].count(top_day) / len(task_stats[t]["days"]) * 100
