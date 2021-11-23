@@ -29,6 +29,10 @@ def LogEvent(evt):
 
 def ReadLogs():
 	logs = []
+	today = time.time()
+	thirty_days_ago = today - 86400*30
+	idx_30 = 0
+
 	try:
 		with open("data/Events.log", 'r') as f:
 			logs = f.readlines()
@@ -38,10 +42,15 @@ def ReadLogs():
 	for i in range(len(logs)):
 		logs[i] = logs[i].replace("\n", "")
 		if logs[i] == "": continue
+
 		idx = logs[i].find(" ")
 		epoch = int(logs[i][:idx])
+		if epoch < thirty_days_ago: idx_30 = i
+
 		ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(epoch))
 		logs[i] = "%s -- %s" % (ts, logs[i][idx+1:].replace("|", "--"))
+
+	logs = logs[idx_30+1:]
 	return logs[::-1]
 
 def readConfig():
