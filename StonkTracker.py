@@ -25,6 +25,7 @@ class StonkTracker():
 		for a in self.portfolio:
 			if a == "TOTAL": continue
 			asset = self.portfolio[a]
+			if asset["quantity"] == 0: continue
 			if asset["type"] == "stock":
 				price, change = getStockQuote(asset["symbol"])
 			elif asset["type"] == "crypto":
@@ -36,7 +37,7 @@ class StonkTracker():
 				value = price * asset["quantity"]
 			else: # unable to retrieve latest price info
 				# use either the previous state value or est_val
-				if "value" in self.prev_state[a]:
+				if a in self.prev_state and "value" in self.prev_state[a]:
 					value = self.prev_state[a]["value"]
 				else:
 					value = asset["est_val"]
@@ -68,6 +69,7 @@ class StonkTracker():
 		for a in sorted_assets:
 			temp = {}
 			asset = self.portfolio[a]
+			if a != "TOTAL" and asset["quantity"] == 0: continue
 			temp[hdrs[0]] = a 												# Asset name
 			temp[hdrs[1]] = "%.2f%%" % asset["day_change"]					# % change today
 			temp[hdrs[2]] = locale.currency(asset["value"], grouping=True)	# Value in USD
@@ -139,7 +141,7 @@ class StonkTracker():
 				"quantity": quantity,
 				"cost": amount,
 				"type": asset_type,
-				"est_val": -1
+				"est_val": amount
 				}
 		saveData(self.portfolio)
 		return "sall good"
@@ -163,12 +165,13 @@ def readData():
 	data = data[1:]
 	data = [d.replace("\n","").split(',') for d in data]
 	for a in data:
+		if float(a[2]) == 0: continue
 		investments[a[0]] = {
 			"symbol": a[1],
 			"quantity": float(a[2]),
 			"cost": float(a[3]),
 			"type": a[4],
-			"est_val": int(a[5]) if a[5] != "" else -1
+			"est_val": float(a[5]) if a[5] != "" else -1
 		}
 	return investments
 
