@@ -12,6 +12,7 @@ import StonkTracker
 import sun_azimuth
 import NetworkTracker
 import PlantTracker
+import MindTracker
 import Weather
 import CoinTracker
 
@@ -20,6 +21,7 @@ task_proc = TaskTracker.TaskTracker()
 exp_proc = ExpenseTracker.ExpenseTracker()
 inv_proc = StonkTracker.StonkTracker()
 plant_proc = PlantTracker.PlantTracker()
+mind_proc = MindTracker.MindTracker()
 coin_proc = CoinTracker.CoinTracker()
 
 # HELPER FUNCTIONS
@@ -209,6 +211,11 @@ def plantsPage():
 	data = plant_proc.getPlantList()
 	return render_template("plants.html", data=data)
 
+@app.route("/mindfulness")
+def mindfulPage():
+	data = mind_proc.getStats()
+	return render_template("mindfulness.html", data=data)
+
 @app.route("/videos")
 def videosPage():
 	return render_template("videos.html")
@@ -322,6 +329,8 @@ def postData():
 										request.form["atype"])
 		elif cmdType == "Plant":
 			res = plant_proc.addPlant(request.form["pname"])
+		elif cmdType == "Mind":
+			res = mind_proc.addSession(int(float(request.form["duration"])))
 		elif cmdType == "Coin":
 			res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
 		else:

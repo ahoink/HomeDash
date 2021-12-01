@@ -80,6 +80,7 @@ label {
 	width:130px;
 	margin-right:10px;
 	text-align:left;
+	font-family: Tahoma, Geneva, sans-serif;
 }
 
 select {
@@ -223,6 +224,11 @@ select {
 	100% { -webkit-transform: rotate(360deg); }
 }
 
+/* Ring Progress Bar */
+.rp_text {
+	font-family: Tahoma, Geneva, sans-serif;
+}
+
 /* Misc */
 #productivity {
 	height: 70px;
@@ -305,3 +311,30 @@ select {
 	display:inline-block;
 	margin: 0px;
 }
+
+/* Mindfulness */
+#everything {
+	width: max-content;
+	margin: auto;
+	display: block;
+	color: #C8C8C8;
+}
+
+#StartBtn, #StopBtn {
+	margin: 30 auto;
+	display: block;
+	padding-left: 50px;
+	padding-right: 50px;
+	background-color:#405090;
+	color: #C8C8C8;
+	box-shadow:inset 0px 1px 0px 0px #4A5E89;
+}
+
+#duration {
+	-webkit-appearance: none;
+	width: 50px;
+	margin-top: -32;
+	margin-left: -7;
+}
+
+

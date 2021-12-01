@@ -1,0 +1,49 @@
+<html>
+  <head>
+	<title>Productivity Server</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0" user-scalable="no" >
+  </head>
+  <body style="background-color: rgb(30, 30, 30)">
+	<div class="topnav">
+		<li><a class="active" href="/mindfulness">Mindfulness</a></li>
+		<div id="navlinks">
+			<li><a href="/">Home</a></li>
+			<li><a href="/tasks">Tasks</a></li>
+			<li><a href="/expenses">Expenses</a></li>
+			<li><a href="/stats">Stats</a></li>
+			<li><a href="/investments">Investments</a></li>
+			<li><a href="/coins">Coins</a></li>
+			<li><a href="/logs">Logs</a></li>
+		</div>
+		<a href="javascript:void(0);" class="icon" onclick="hamburger()">
+			<i class="fa fa-bars"></i>
+		</a>
+	</div>
+	<div id="everything">
+		<div id="ringtimer" style="font-size:200%"></div>	
+		<button type="button" class="stylized" id="StartBtn" onClick="startTimer(event);">Start</button>
+		<button type="button" class="stylized" id="StopBtn" onClick="stopTimer();" style="display:None">Stop</button>
+		<label for="duration">Minutes of Mindfulness</label>
+		<input type="number" id="duration" size="3" value="15">
+		
+		<pre id="stats"><b>Stats</b></pre>
+	</div>
+	<script type="text/javascript" src="static/js/radialprogress.js"></script>
+	<script src="static/js/mindfulness.js"></script>
+	<script src="static/js/common.js"></script>
+	<script>
+		var ring = new RadialProgress(document.getElementById("ringtimer"),{
+			noPercentage:true,
+			colorBg:"#404040",
+			colorText:"#C8C8C8",
+			thick:10,
+			animationSpeed:0.25});
+		var data = JSON.parse('{{ data | tojson | safe}}');
+
+		displayStats();
+	</script>
+  </body>
+</html>
