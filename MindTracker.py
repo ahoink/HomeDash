@@ -11,10 +11,21 @@ class MindTracker():
 		return self.stats
 
 	def addSession(self, duration):
-		writeSession(time.time(), duration)
-		self.stats["current_streak"] += 1
+		t = time.time()
+		writeSession(t, duration)
+
+		last_dt = datetime.fromtimestamp(self.stats["last"])
+		this_dt = datetime.fromtimestamp(t)
+		if isNextDay(last_dt, this_dt):
+			self.stats["current_streak"] += 1
+			self.stats["best_streak"] = max(self.stats["best_streak"], self.stats["current_streak"])
+		else:
+			self.stats["current_streak"] = 1
 		self.stats["sessions"] += 1
 		self.stats["total"] += duration
+		self.stats["last"] = t
+
+		return True
 
 def readData():
 	data = []
@@ -28,6 +39,10 @@ def writeSession(t, duration):
 	with open("data/mindfulness.csv", 'a') as f:
 		f.write("%d,%d\n" % (t, duration))
 
+def isNextDay(dt1, dt2):
+	next_day = dt1 + timedelta(days=1)
+	return next_day.day == dt2.day and next_day.month == dt2.month and next_day.year == dt2.year
+
 def processData(data):
 	stats = {}
 
@@ -37,6 +52,7 @@ def processData(data):
 	tot_time = 0
 
 	prev_day = datetime.fromtimestamp(0)
+	last_ts = 0
 	for line in data:
 		splitted = line.split(',')
 		ts = int(splitted[0])
@@ -44,8 +60,7 @@ def processData(data):
 
 		# streaks
 		dt = datetime.fromtimestamp(ts)
-		temp_dt = prev_day + timedelta(days=1)
-		if temp_dt.day == dt.day and temp_dt.month == dt.month and temp_dt.year == dt.year:
+		if isNextDay(prev_day, dt):
 			curr_streak += 1
 		elif prev_day.day == dt.day:
 			pass
@@ -54,6 +69,7 @@ def processData(data):
 		best_streak = max(best_streak, curr_streak)
 		prev_day = dt
 
+		last_ts = ts
 		tot_time += dur
 		num_sessions += 1
 
@@ -61,5 +77,6 @@ def processData(data):
 	stats["current_streak"] = curr_streak
 	stats["sessions"] = num_sessions
 	stats["total"] = tot_time
+	stats["last"] = last_ts
 
 	return stats
