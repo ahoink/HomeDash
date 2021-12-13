@@ -74,7 +74,8 @@ def getSunAngle(year, month, day, hour, minute, lat, lon):
         elif solar_elev_angle > -0.575:
             atm_refrac = 1735 + solar_elev_angle*(-518.2 + solar_elev_angle*(103.4 + solar_elev_angle*(-12.79 + solar_elev_angle*0.711)))
         else:
-            atm_refrac = -20.772/tan(radians(solar_elev_angle))/3600
+            atm_refrac = -20.772/tan(radians(solar_elev_angle))
+        atm_refrac /= 3600
 
     #AG
     corrected_solar_elev = solar_elev_angle + atm_refrac # angle between sun and horizon (0 means at horizon, negative means below horizon - sun has set)
@@ -87,7 +88,7 @@ def getSunAngle(year, month, day, hour, minute, lat, lon):
         solar_azimuth_angle = (540 - solar_azimuth_angle) % 360
         
     if corrected_solar_elev <= 0: return 0, 0 # sun is below horizon, so don't care about position
-    return solar_azimuth_angle, solar_elev_angle
+    return solar_azimuth_angle, corrected_solar_elev
 
 def getSunlightTimes(lat, lon, angle, lower_lim_adjust, upper_lim_adjust, min_elev=0, max_elev=90):
     lower_lim = angle - lower_lim_adjust # adjustments for obstructions to window
