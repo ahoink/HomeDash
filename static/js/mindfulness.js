@@ -53,6 +53,7 @@ function stopTimer() {
 function updateRing() {
 	timerVal = timerVal + 1;
 	if (timerVal > timerMax) {
+		timerVal = timerVal - 1;
 		stopTimer();
 		return;
 	}

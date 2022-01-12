@@ -8,6 +8,12 @@ class MindTracker():
 		self.init = False
 
 	def getStats(self):
+		t = time.time()
+		last_dt = datetime.fromtimestamp(self.stats["last"])
+		now_dt = datetime.fromtimestamp(t)
+		if (now_dt - last_dt) > timedelta(days=1, hours=23, minutes=59):
+			self.stats["current_streak"] = 0
+ 			
 		return self.stats
 
 	def addSession(self, duration):
