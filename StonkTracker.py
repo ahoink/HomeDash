@@ -30,6 +30,8 @@ class StonkTracker():
 				price, change = getStockQuote(asset["symbol"])
 			elif asset["type"] == "crypto":
 				price, change = getCryptoQuote(asset["symbol"])
+			elif asset["type"] == "cash":
+				price, change = (1.0, 0.0)
 			else:
 				price, change = (asset["est_val"], 0)
 
