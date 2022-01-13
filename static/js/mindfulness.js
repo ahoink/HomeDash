@@ -4,16 +4,37 @@ var timerMax = 300;
 var ringMax = 300;
 
 var color0 = "#007FFF";
-var color1 = "#00FF7F";
+var color1 = "#7F00DF"; //"#00FF7F";
 var color = 0;
 
 function displayStats() {
 	txt = document.getElementById("stats");
 	
 	txt.innerHTML = txt.innerHTML + "\nCurrent Streak:\t\t\t" + data["current_streak"];
-	txt.innerHTML = txt.innerHTML + "\nBest Streak:\t\t\t\t" + data["best_streak"];
+	txt.innerHTML = txt.innerHTML + "\nLongest Streak:\t\t\t" + data["best_streak"];
 	txt.innerHTML = txt.innerHTML + "\nTotal Sessions:\t\t\t" + data["sessions"];
 	txt.innerHTML = txt.innerHTML + "\nTotal Mindfulness Minutes:\t" + data["total"];
+
+	if (data["total"] > 60)
+		txt.innerHTML = txt.innerHTML + minutesBreakdown(data["total"]);
+}
+
+function minutesBreakdown(minutes) {
+	var days = 0;
+	var hours = 0;
+	
+	days = parseInt(minutes / 1440);
+	minutes = minutes % 1440;
+	hours = parseInt(minutes / 60);
+	minutes = minutes % 60;
+
+	if (days > 0)
+		strTime = days + "d " + hours + "h " + minutes + "m";
+	else
+		strTime = hours + "h " + minutes + "m";
+
+	return " (" + strTime + ")";
+	
 }
 
 function startTimer(evt) {
@@ -86,6 +107,59 @@ function setTimerMax(maxVal) {
 	
 }
 
+function trueNightMode() {
+	var checkbox = document.getElementById("trunite");
+	var doc = document.body;
+	var alltext = document.getElementById("everything");
+	var startBtn = document.getElementById("StartBtn");
+	var stopBtn = document.getElementById("StopBtn");
+	var navbar = document.getElementsByClassName("active")[0];
+	var hamburger = document.getElementsByClassName("icon")[0];
+	var ringtext = ring.text;
+
+	if (checkbox.checked == true) {
+		doc.style.backgroundColor = "#101010";
+		alltext.style.color = "#989898";
+		startBtn.style.color = "#989898";
+		startBtn.style.backgroundColor = "#304080";
+		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #344E79";
+		stopBtn.style.color = "#989898";
+		stopBtn.style.backgroundColor = "#304080";
+		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #344E79";
+		color0 = "#005FAF";
+		color1 = "#5F309F";
+		ringtext.style.color = "#969696";
+		navbar.style.backgroundColor = "#5060A0";
+		hamburger.style.backgroundColor = "#5060A0";
+	} else {
+		doc.style.backgroundColor = "#1E1E1E";
+		alltext.style.color = "#C8C8C8";
+		startBtn.style.color = "#C8C8C8";
+		startBtn.style.backgroundColor = "#405090";
+		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #445E89";
+		stopBtn.style.color = "#C8C8C8";
+		stopBtn.style.backgroundColor = "#405090";
+		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #445E89";
+		color0 = "#007FFF";
+		color1 = "#00FF7F";
+		ringtext.style.color = "#C8C8C8";
+		navbar.style.backgroundColor = "#7080C0";
+		hamburger.style.backgroundColor = "#7080C0";
+	}
+	if (color) {
+		ring.colorBg = color0;
+		ring.colorFg = color1;
+	} else {
+		if (timerVal < ringMax)
+			ring.colorBg = "#404040";
+		else
+			ring.colorBg = color1;
+		ring.colorFg = color0;
+	}
+	ring.noAnimations=true;
+	ring.draw(true);
+	ring.noAnimations=false;
+}
 /*var bar = new ProgressBar.Circle(container, {
 	color: '#aaa',
 	// This has to be the same size as the maximum width to

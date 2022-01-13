@@ -31,6 +31,8 @@
 		<input type="number" id="duration" size="3" value="15">
 		
 		<pre id="stats"><b>Stats</b></pre>
+		<input type="checkbox" id="trunite" name="trunite" onClick="trueNightMode()">
+		<label for="trunite">True Night Mode</label>
 	</div>
 	<script type="text/javascript" src="static/js/radialprogress.js"></script>
 	<script src="static/js/mindfulness.js"></script>
@@ -45,6 +47,7 @@
 		var data = JSON.parse('{{ data | tojson | safe}}');
 
 		displayStats();
+		document.getElementById("trunite").checked = false;
 	</script>
   </body>
 </html>
