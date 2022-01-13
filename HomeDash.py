@@ -170,12 +170,17 @@ def tasksPage():
 
 @app.route("/stats")
 def statsPage():
-	fig,stats = TaskTracker.plotStats()
+	fig,stats, grid = TaskTracker.plotStats()
 	output = io.BytesIO()
 	FigureCanvas(fig).print_png(output)
 	imagestr = "data:image/png;base64,"
 	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
-	return render_template("stats.html", image=imagestr, stats=stats)
+	
+	output = io.BytesIO()
+	grid.save(output, format="PNG")
+	imagestr2 = "data:image/png;base64,"
+	imagestr2 += base64.b64encode(output.getvalue()).decode("utf8")
+	return render_template("stats.html", image=imagestr, stats=stats, image2=imagestr2)
 
 @app.route("/expenses")
 def expensePage():

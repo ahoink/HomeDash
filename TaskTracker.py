@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from PIL import Image, ImageDraw, ImageFont
 import copy
 
 MAX_SCORE = 1.5
@@ -364,18 +365,20 @@ def processStatsData(data, tasks, retDaily=True):
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 
 	# get daily score for today
-	ts = datetime.timestamp(today_dt)
-	temp_prod = productivity[-WMA_INT:]
-	# account for overdue tasks
-	for t in tasks:
-		if t not in completed: continue
-		temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
-		if not tasks[t]["isActive"]: temp_score = 0.0
-		if temp_score > 1.0:
-			temp_prod.append((normalizeScore(temp_score) * tasks[t]["weight"], tasks[t]["weight"]))
-	# calc weighted average productivity score
-	daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
-	daily_prod.append((ts, daily_score))
+	while today_dt >= curr_date:
+		ts = datetime.timestamp(curr_date)
+		temp_prod = productivity[-WMA_INT:]
+		# account for overdue tasks
+		for t in tasks:
+			if t not in completed: continue
+			temp_score = (ts - tasks[t]["last"]) / tasks[t]["freq"]
+			if not tasks[t]["isActive"]: temp_score = 0.0
+			if temp_score > 1.0:
+				temp_prod.append((normalizeScore(temp_score) * tasks[t]["weight"], tasks[t]["weight"]))
+		# calc weighted average productivity score
+		daily_score = sum([p[0] for p in temp_prod[-WMA_INT:]]) / sum([p[1] for p in temp_prod[-WMA_INT:]])
+		daily_prod.append((ts, daily_score))
+		curr_date += timedelta(days=1)
 
 	if retDaily:
 		return daily_prod, days_stats, task_stats
@@ -387,6 +390,9 @@ def plotStats():
 	task_data = readData()
 	productivity, days_stats, task_stats = processStatsData(stat_data, task_data)
 
+	gridplot, gridstart = genGridPlot(productivity)
+	use_gridplot = False
+
 	ma = []
 	ma = [p[1] for p in productivity]
 
@@ -396,7 +402,10 @@ def plotStats():
 	for i in range(len(productivity)):
 		dt = datetime.fromtimestamp(productivity[i][0])
 		if dt.day == 1:
-			xticks.append(i)
+			if use_gridplot:
+				xticks.append(int((i+gridstart)/7)*23-2)
+			else:
+				xticks.append(i)
 			xlabels.append(dt.strftime("%b"))
 
 	# percentage of tasks performed on each day
@@ -407,19 +416,71 @@ def plotStats():
 
 	#fig = plt.figure()
 	fig, axes = plt.subplots(2, 1)
-	axes[0].plot(range(len(ma)), ma)
+	if use_gridplot:
+		axes[0].imshow(gridplot)
+	else:
+		axes[0].plot(range(len(ma)), ma)
 	axes[1].bar(range(7), day_percents)
 	plt.sca(axes[0])
 	plt.title("%d-Task Weighted Moving Average" % WMA_INT)
 	plt.xticks(xticks, xlabels)
-	plt.grid(True, "major", "x", linestyle="--", linewidth=1)
+	if use_gridplot:
+		plt.yticks([], [])
+	else:
+		plt.grid(True, "major", "x", linestyle="--", linewidth=1)
 	plt.sca(axes[1])
 	plt.title("Distribution of Time Spent on Tasks")
 	plt.ylabel("%")
 	plt.xticks(range(7), [d[:3] for d in day_names])
 
 	fig.tight_layout()
-	return fig, getStatsAvgBreakdown(task_stats)
+	return fig, getStatsAvgBreakdown(task_stats), gridplot
+
+def genGridPlot(productivity=[]):
+	sq_size = 20
+	spacing = 3
+	grid_size = sq_size + spacing
+	width = (sq_size+spacing)*52-spacing
+	height = (sq_size+spacing)*7-spacing
+	img = Image.new("RGB", (width, height+sq_size), (255, 255, 255))
+	px = img.load()
+	font = ImageFont.truetype("UbuntuMono-R.ttf", 16)
+
+	x = 0
+	y = 0
+	day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+	first_day = time.strftime("%A", time.localtime(productivity[0][0]))
+	#for i in range(-15, 0):
+	#	print(time.strftime("%d-%m-%y", time.localtime(productivity[i][0])))
+	y = day_names.index(first_day) * grid_size
+	for p in productivity:
+		color = colorFromNormScore(p[1])
+		for j in range(y, y+sq_size):
+			for i in range(x, x+sq_size):
+				px[i, j] = color
+
+		dt = datetime.fromtimestamp(p[0])# + timedelta(days=1)
+		if dt.day == 1:
+			diff = int((spacing+1)/2)
+			tempx = max(0, x-diff)
+			tempy = max(0, y-diff)
+			if tempx:
+				for j in range(tempy, height):
+					px[tempx, j] = (0, 0, 0)
+			if tempy:
+				xlim = int(tempx+sq_size+diff*2)
+				for i in range(tempx, xlim):
+					px[i, tempy] = (0, 0, 0)
+				for j in range(0, tempy):
+					px[xlim-1, j] = (0, 0, 0)
+			ImageDraw.Draw(img).text((x, height+spacing), dt.strftime("%b"), (0, 0, 0), font=font)
+		y += grid_size
+		if y >= height:
+			y = 0
+			x += grid_size
+	
+
+	return img, day_names.index(first_day)
 
 def getStatsAvgBreakdown(task_stats=None, sorting=0):
 	task_data = readData()
@@ -443,6 +504,22 @@ def getStatsAvgBreakdown(task_stats=None, sorting=0):
 						hdrs[3]:avg_freq})
 	avg_stats = sorted(avg_stats, key=lambda x: x[hdrs[sorting]])	# sort by score
 	return {"Headers": hdrs, "Stats": avg_stats}
+
+def colorFromNormScore(score, colorType="RGB"):
+	
+	if score < 80:
+		r = 224
+		g = int(224 * (score/80))
+		b = 0
+	else:
+		r = int(224 -  224 * (score-80)/20)
+		g = 224
+		b = 0
+
+	if colorType.lower() == "hex":
+		return "#%0.2X%0.2X%0.2x" % (r, g, b)
+	
+	return (r, g, b)
 
 def secToTimeString(t, whole=False):
 	# only converts to days or months
