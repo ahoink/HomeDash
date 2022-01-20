@@ -219,7 +219,12 @@ def plantsPage():
 @app.route("/mindfulness")
 def mindfulPage():
 	data = mind_proc.getStats()
-	return render_template("mindfulness.html", data=data)
+	plot = MindTracker.genGridPlot()
+	output = io.BytesIO()
+	plot.save(output, format="PNG")
+	imagestr = "data:image/png;base64,"
+	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
+	return render_template("mindfulness.html", data=data, image=imagestr)
 
 @app.route("/videos")
 def videosPage():

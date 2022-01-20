@@ -337,4 +337,9 @@ select {
 	margin-left: -7;
 }
 
+#timerLim {
+	float: right;
+	margin-top: 15px;
+}
+
 

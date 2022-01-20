@@ -38,6 +38,8 @@ function minutesBreakdown(minutes) {
 }
 
 function startTimer(evt) {
+	var checkbox = document.getElementById("timerLim");
+
 	document.getElementById("StartBtn").style.display = "none";
 	document.getElementById("StopBtn").style.display = "block";
 
@@ -47,7 +49,11 @@ function startTimer(evt) {
 	ring.draw(true);
 
 	var userTime = parseInt(document.getElementById("duration").value, 10);
-	timerMax = userTime * 60;
+	if (checkbox.checked == true) {
+		timerMax = userTime * 60;
+	} else {
+		timerMax = 3600;
+	}
 	timer = setInterval(updateRing, 1000);
 }
 
@@ -107,6 +113,17 @@ function setTimerMax(maxVal) {
 	
 }
 
+function enableTimerLimit() {
+	var checkbox = document.getElementById("timerLim");
+	var textbox = document.getElementById("duration");
+
+	if (checkbox.checked == true) {
+		textbox.disabled = false;
+	} else {
+		textbox.disabled = true;
+	}
+}
+
 function trueNightMode() {
 	var checkbox = document.getElementById("trunite");
 	var doc = document.body;
@@ -119,18 +136,20 @@ function trueNightMode() {
 
 	if (checkbox.checked == true) {
 		doc.style.backgroundColor = "#101010";
-		alltext.style.color = "#989898";
-		startBtn.style.color = "#989898";
-		startBtn.style.backgroundColor = "#304080";
-		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #344E79";
-		stopBtn.style.color = "#989898";
-		stopBtn.style.backgroundColor = "#304080";
-		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #344E79";
-		color0 = "#005FAF";
-		color1 = "#5F309F";
-		ringtext.style.color = "#969696";
-		navbar.style.backgroundColor = "#5060A0";
-		hamburger.style.backgroundColor = "#5060A0";
+		alltext.style.color = "#606060";
+		startBtn.style.color = "#606060";
+		startBtn.style.backgroundColor = "#20284D";
+		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #24374C";
+		stopBtn.style.color = "#606060";
+		stopBtn.style.backgroundColor = "#20284D";
+		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #24374C";
+		color0 = "#004F9F";
+		color1 = "#4F208F";
+		ringtext.style.color = "#808080";
+		navbar.style.backgroundColor = "#303858";
+		hamburger.style.backgroundColor = "#303858";
+		navbar.style.color = "#808080";
+		hamburger.style.color = "#808080";
 	} else {
 		doc.style.backgroundColor = "#1E1E1E";
 		alltext.style.color = "#C8C8C8";
@@ -141,10 +160,12 @@ function trueNightMode() {
 		stopBtn.style.backgroundColor = "#405090";
 		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #445E89";
 		color0 = "#007FFF";
-		color1 = "#00FF7F";
+		color1 = "#7F00DF";
 		ringtext.style.color = "#C8C8C8";
 		navbar.style.backgroundColor = "#7080C0";
 		hamburger.style.backgroundColor = "#7080C0";
+		navbar.style.color = "#FFFFFF";
+		hamburger.style.color = "#FFFFFF";
 	}
 	if (color) {
 		ring.colorBg = color0;

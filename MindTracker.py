@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta
+from PIL import Image
 
 class MindTracker():
 	def __init__(self):
@@ -86,3 +87,74 @@ def processData(data):
 	stats["last"] = last_ts
 
 	return stats
+
+def genGridPlot():
+	data = readData()
+
+	# dimension vars
+	sq_size = 30
+	spacing = 5
+	grid_size = sq_size + spacing
+	width = grid_size*7-spacing
+	height = grid_size*5-spacing
+	x = 0
+	y = 0
+
+	# image vars
+	img = Image.new("RGBA", (width, height), (30, 30, 30, 0))
+	px = img.load()
+
+	# prepare data
+	dt_now = datetime.fromtimestamp(time.time())
+	organized_data = []
+	day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+	first_day = ""
+	max_dur = 0
+	prev_day = None
+
+	for d in data:
+		splitted = d.split(',')
+		ts = int(splitted[0])
+		dur = int(splitted[1])
+		dt = datetime.fromtimestamp(ts)
+		if dt < (dt_now - timedelta(days=30)):
+			continue
+		#print(dt)
+		if first_day == "":
+			first_day = time.strftime("%A", time.localtime(ts))
+			prev_day = dt - timedelta(days=1)
+
+		if prev_day.day == dt.day:
+			organized_data[-1] += dur
+		else:
+			prev_day += timedelta(days=1)
+			while prev_day.day != dt.day:
+				organized_data.append(0)
+				prev_day += timedelta(days=1)
+			organized_data.append(dur)
+		max_dur = max(max_dur, dur)
+		prev_day = dt
+
+	# draw data
+	#print(len(organized_data))
+	#print(organized_data)
+	x = day_names.index(first_day) * grid_size
+	for d in organized_data:
+		color = colorGradient(d / max_dur)
+		for j in range(y, y+sq_size):
+			for i in range(x, x+sq_size):
+				px[i, j] = color
+		x += grid_size
+		if x >= width:
+			x = 0
+			y += grid_size
+
+	return img
+
+def colorGradient(pct):
+	r = 0
+	g = int(127*pct)
+	b = int(255*pct)
+	return (r, g, b, 255)
+		
+	
