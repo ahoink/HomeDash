@@ -105,40 +105,32 @@ def genGridPlot():
 	px = img.load()
 
 	# prepare data
-	dt_now = datetime.fromtimestamp(time.time())
-	organized_data = []
 	day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-	first_day = ""
+	last_ts = int(data[-1].split(',')[0])
+	last_day = datetime.fromtimestamp(last_ts)
+	last_dow = time.strftime("%A", time.localtime(last_ts))
+	offset = day_names.index(last_dow)
+	curr_day = last_day - timedelta(days=28+offset)
+	curr_day = datetime(curr_day.year, curr_day.month, curr_day.day, 0, 0, 0)
+	organized_data = [0]*(28+offset+1)
+	day_idx = 0
 	max_dur = 0
-	prev_day = None
 
 	for d in data:
 		splitted = d.split(',')
 		ts = int(splitted[0])
 		dur = int(splitted[1])
 		dt = datetime.fromtimestamp(ts)
-		if dt < (dt_now - timedelta(days=30)):
+		if dt < curr_day:
 			continue
-		#print(dt)
-		if first_day == "":
-			first_day = time.strftime("%A", time.localtime(ts))
-			prev_day = dt - timedelta(days=1)
-
-		if prev_day.day == dt.day:
-			organized_data[-1] += dur
-		else:
-			prev_day += timedelta(days=1)
-			while prev_day.day != dt.day:
-				organized_data.append(0)
-				prev_day += timedelta(days=1)
-			organized_data.append(dur)
+		while curr_day.day != dt.day:
+			curr_day += timedelta(days=1)
+			day_idx += 1
+		
+		organized_data[day_idx] += dur
 		max_dur = max(max_dur, dur)
-		prev_day = dt
 
 	# draw data
-	#print(len(organized_data))
-	#print(organized_data)
-	x = day_names.index(first_day) * grid_size
 	for d in organized_data:
 		color = colorGradient(d / max_dur)
 		for j in range(y, y+sq_size):
