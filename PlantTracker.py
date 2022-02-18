@@ -35,7 +35,7 @@ class PlantTracker():
 			temp[hdrs[1]] = time.strftime("%b %d", time.localtime(p[1]))	# Last watered (Month Date)
 			temp[hdrs[2]] = secToTimeString(self.freqs.get(p[0], 0))		# Avg watering frequency
 			temp["Color"] = self.getColorFromScore(p[-1])					# Color hex code
-			if watchOnly and p[-1] < 0.95: continue
+			if watchOnly and p[-1] < 0.90: continue
 			plnts.append(temp)	
 		return {"Headers":hdrs, "Plants":plnts}
 
@@ -142,7 +142,7 @@ def getFreqs():
 	for s in stats:
 		splitted = s.replace("\n", "").split(',')
 		temp = plant_times.get(splitted[0], [])
-		if len(temp) >= (FREQ_MA + 1): continue
+		#if len(temp) >= (FREQ_MA + 1): continue # for SMA
 		temp.append(int(splitted[1]))
 		plant_times[splitted[0]] = temp
 
@@ -151,11 +151,33 @@ def getFreqs():
 		avg = 0
 		num = min(len(times)-1, FREQ_MA)
 		if num < 1: continue
-		for i in range(num):
-			avg += times[i] - times[i+1]
-		avg /= num
+		
+		# EMA
+		avg = calcEMA(times, num)
+		
+		# SMA
+		#for i in range(num):
+		#	avg += times[i] - times[i+1]
+		#avg /= num
+		
 		plant_freqs[p] = avg
 	return plant_freqs
+
+def calcEMA(times, k=3):
+	alpha = 2 / (1+k)
+	times = times[::-1]
+
+	ema = 0
+	for i in range(k):
+		ema += times[i+1] - times[i]
+	ema /= k
+
+	lim = len(times)-1
+	for i in range(k, lim):
+		val = times[i+1] - times[i]
+		ema = val * alpha + ema * (1-alpha)
+
+	return ema
 
 def secToTimeString(t, whole=False):
 	# only converts to days or months
