@@ -27,7 +27,7 @@
 		<b><u>Add Coin</u></b>
 		<br>
 		Year:
-		<input type="number" id="cyear" name="year" size="15">
+		<input pattern="[0-9]*" type="text" id="cyear" name="year" size="15">
 		<br>
 		<br>
 		Mint Mark:
@@ -47,6 +47,7 @@
 	<button type="button" class="stylized" id="saveBtn" onClick="saveCoinData(event);">Save</button>
 	<br>
 	<button type="button" class="stylized" id="undoBtn" onClick="undoLast(event);">Undo</button>
+	<pre id="recently_added">{{ add_history }}</pre>
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<img src={{ image2 }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<script src="static/js/common.js"></script>

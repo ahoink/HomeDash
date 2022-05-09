@@ -243,7 +243,9 @@ def coinsPage():
 	FigureCanvas(fig2).print_png(output)
 	imagestr2 = "data:image/png;base64,"
 	imagestr2 += base64.b64encode(output.getvalue()).decode("utf8")
-	return render_template("coins.html", image=imagestr, image2=imagestr2)
+
+	historyText = coin_proc.getHistory()
+	return render_template("coins.html", image=imagestr, image2=imagestr2, add_history=historyText)
 
 @app.route("/logs")
 def logsPage():

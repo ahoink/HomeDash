@@ -18,6 +18,7 @@ class CoinTracker():
 		self.memorial = ReadData("pennies_collection")
 		self.wheat = ReadData("wheat_collection")
 		self.last_year = ("", "")
+		self.history = []
 
 	def addPenny(self, year, mark):
 		if not year.isdigit():
@@ -35,8 +36,19 @@ class CoinTracker():
 			return "Invalid Year"
 
 		self.last_year = (year, mark)
+		self.history.append((year, mark))
 
 		return "sall good"
+
+	def getHistory(self):
+		hist = ""
+		for coin in self.history:
+			temp = coin[0]
+			if coin[1] != "None": temp += " %s" % coin[1]
+			temp += "\n"
+			hist = temp + hist
+		return hist
+
 
 	def saveData(self):
 		try:
@@ -48,6 +60,7 @@ class CoinTracker():
 
 		try:
 			SaveData(self.wheat, "wheat_collection")
+			self.history = []
 		except Exception as ex:
 			print("Failed to save wheat penny data")
 			print(ex)
@@ -57,16 +70,17 @@ class CoinTracker():
 
 	def revertPrevState(self):
 		rem = ""
-		if self.last_year[0] != "":
-			year = self.last_year[0]
-			mark = self.last_year[1]
+		if self.history: #self.last_year[0] != "":
+			last = self.history.pop()
+			year = last[0] #self.last_year[0]
+			mark = last[1] #self.last_year[1]
 			if 1909 <= int(year) <= 1958:
 				self.wheat[year][mark] -= 1
 			elif 1959 <= int(year) <= 1981:
 				self.memorial[year][mark] -= 1
 			rem = "Removed %s" % year
 			if mark != "None": rem += " %s" % mark
-			self.last_year = ("", "")
+			#self.last_year = ("", "")
 			return rem
 		else:
 			return "Nothing to undo"
@@ -143,21 +157,26 @@ def PlotData(coll, supply, title, fig=None):
 
 		short_years.append(int(year)-1900)
 
-	'''num_divs = 4
-	target_sum = sum(coll_totals) / num_divs
-	divs = [0]*(num_divs-1)
-	for i in range(len(coll_totals)):
-		for j in range(num_divs):
-			if divs[j] == 0:
-				if sum(coll_totals[divs[max(0, j-1)]:i+1]) > target_sum:
-					a = abs(sum(coll_totals[divs[max(0, j-1)]:i]) - target_sum)
-					b = abs(sum(coll_totals[divs[max(0, j-1)]:i+1]) - target_sum)
-					if a < b: divs[j] = i
-					else: divs[j] = i+1
-				break
-		if divs[-1] != 0: break
-	print([short_years[x] for x in divs])
-	'''
+	# find a way to divide the years (from 1970-1981) into nearly equal bins
+	if 81 in short_years:
+		num_divs = 2
+		idx70 = short_years.index(70)
+		total_70plus = coll_totals[idx70:]
+		target_sum = sum(total_70plus) / num_divs
+		divs = [0]*(num_divs-1)
+		for i in range(len(total_70plus)):
+			for j in range(num_divs):
+				if divs[j] == 0:
+					if sum(total_70plus[divs[max(0, j-1)]:i+1]) > target_sum:
+						a = abs(sum(total_70plus[divs[max(0, j-1)]:i]) - target_sum)
+						b = abs(sum(total_70plus[divs[max(0, j-1)]:i+1]) - target_sum)
+						if a < b: divs[j] = i
+						else: divs[j] = i+1
+					break
+			if divs[-1] != 0: break
+		print("Divisions:")
+		print([short_years[x+idx70] for x in divs])
+	
 	if fig == None:
 		fig, ax = plt.subplots()
 	else:
@@ -170,27 +189,31 @@ def PlotData(coll, supply, title, fig=None):
 	ax.bar(short_years, coll_S_totals)
 	ax.legend(["P","D", "S"])
 	if 81 in short_years:
-		'''for i in range(num_divs-1):
-			idx1 = 0 if i == 0 else divs[i-1]
-			idx2 = divs[i]
+		# Mark found division bins (from above) with axis lines and amount labels
+		for i in range(num_divs-1):
+			idx1 = (0 if i == 0 else divs[i-1]) + idx70
+			idx2 = divs[i] + idx70
 			y1 = short_years[idx1]
 			y2 = short_years[idx2]
 			plt.axvline(x=y2-0.5, color="black", linestyle="--", linewidth=0.7)
 			plt.text((y1+y2)/2, ax.get_ylim()[1]*0.95, sum(coll_totals[idx1:idx2]))
-		plt.text((short_years[divs[-1]] + 81)/2, ax.get_ylim()[1]*0.95, sum(coll_totals[divs[-1]:]))
-		'''
+		plt.text((short_years[divs[-1]+idx70] + 81)/2, ax.get_ylim()[1]*0.95, sum(coll_totals[divs[-1]+idx70:]))
+		
+		# 1959-1969 always gets its own bin
 		plt.axvline(x=69.5, color="black", linestyle="--", linewidth=0.7)
-		plt.axvline(x=76.5, color="black", linestyle="--", linewidth=0.7)
+		#plt.axvline(x=76.5, color="black", linestyle="--", linewidth=0.7)
 		plt.text(64, ax.get_ylim()[1]*0.95, sum(coll_totals[:11]))
-		plt.text(73, ax.get_ylim()[1]*0.95, sum(coll_totals[11:18]))
-		plt.text(79, ax.get_ylim()[1]*0.95, sum(coll_totals[18:]))
+		#plt.text(73, ax.get_ylim()[1]*0.95, sum(coll_totals[11:18]))
+		#plt.text(79, ax.get_ylim()[1]*0.95, sum(coll_totals[18:]))
 
 		price_lb = GetCopperPrice()
 		lbs = sum(coll_totals) * (0.95 * 3.11) / 453.6 # 3.11 g per penny, 95% copper, 453.6 g per pound
-		title += " [Melt value \$%.2f @ \$%.2f/lb]" % (lbs * price_lb, price_lb)
+		title += " [Copper value \$%.2f, %.1f lbs @ \$%.2f/lb]" % (lbs * price_lb, lbs, price_lb)
 	plt.xticks(rotation=-45)
 	ax.set_xticks(short_years)
 	ax.set_xticklabels(["'%d" % y for y in short_years])
+	ax.grid(axis='y')
+	ax.set_axisbelow(True)
 
 	ax2 = ax.twinx()
 	ax2.plot(short_years, supply_totals, color="red")

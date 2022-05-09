@@ -20,6 +20,7 @@ function submitCoin()
 					year = (parseInt(year) + 1900).toString();
 				}
 				document.getElementById("submit_status").innerHTML = "Added " + year + " " + mark;
+				document.getElementById("recently_added").innerHTML = year + " " + mark + "\n" + document.getElementById("recently_added").innerHTML
 				document.getElementById("cyear").value="";
 				document.getElementById("none").checked=true;
 				document.getElementById("denver").checked=false;
@@ -27,6 +28,7 @@ function submitCoin()
 			}
 		}
 	});
+	document.getElementById("cyear").focus();
 }
 
 function saveCoinData(evt)
@@ -43,6 +45,7 @@ function saveCoinData(evt)
 			else {
 				alert("Saved coin data!");
 				//perUpdate();
+				document.getElementById("recently_added").innerHTML = "";
 			}
 		}
 	});
@@ -56,6 +59,9 @@ function undoLast(evt)
 		data: "cmd=UNDO&type=Coin",
 		success: function(res, textStatus){
 			document.getElementById("submit_status").innerHTML = res;
+			var temp = document.getElementById("recently_added").innerHTML;
+			var idx = temp.indexOf("\n");
+			document.getElementById("recently_added").innerHTML = temp.substring(idx+1, temp.length);
 		}
 	});
 }
