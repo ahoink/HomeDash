@@ -51,9 +51,11 @@
 		var data = JSON.parse('{{ data | tojson | safe}}');
 
 		displayStats();
-		document.getElementById("trunite").checked = false;
+		document.getElementById("trunite").checked = true;
 		document.getElementById("timerLim").checked = false;
 		document.getElementById("duration").disabled = true;
+
+		trueNightMode();
 	</script>
   </body>
 </html>

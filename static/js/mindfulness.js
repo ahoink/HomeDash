@@ -135,21 +135,21 @@ function trueNightMode() {
 	var ringtext = ring.text;
 
 	if (checkbox.checked == true) {
-		doc.style.backgroundColor = "#101010";
-		alltext.style.color = "#606060";
-		startBtn.style.color = "#606060";
-		startBtn.style.backgroundColor = "#20284D";
-		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #24374C";
-		stopBtn.style.color = "#606060";
-		stopBtn.style.backgroundColor = "#20284D";
-		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #24374C";
-		color0 = "#004F9F";
-		color1 = "#4F208F";
-		ringtext.style.color = "#808080";
-		navbar.style.backgroundColor = "#303858";
-		hamburger.style.backgroundColor = "#303858";
-		navbar.style.color = "#808080";
-		hamburger.style.color = "#808080";
+		doc.style.backgroundColor = "#000000";
+		alltext.style.color = "#505050";
+		startBtn.style.color = "#505050";
+		startBtn.style.backgroundColor = "#10183D";
+		startBtn.style.boxShadow = "inset 0px 1px 0px 0px #14273C";
+		stopBtn.style.color = "#505050";
+		stopBtn.style.backgroundColor = "#10183D";
+		stopBtn.style.boxShadow = "inset 0px 1px 0px 0px #14273C";
+		color0 = "#003F8F";
+		color1 = "#3F207F";
+		ringtext.style.color = "#606060";
+		navbar.style.backgroundColor = "#202848";
+		hamburger.style.backgroundColor = "#202848";
+		navbar.style.color = "#606060";
+		hamburger.style.color = "#606060";
 	} else {
 		doc.style.backgroundColor = "#1E1E1E";
 		alltext.style.color = "#C8C8C8";

@@ -26,6 +26,8 @@ class MindTracker():
 		if isNextDay(last_dt, this_dt):
 			self.stats["current_streak"] += 1
 			self.stats["best_streak"] = max(self.stats["best_streak"], self.stats["current_streak"])
+		elif last_dt.day == this_dt.day:
+			pass
 		else:
 			self.stats["current_streak"] = 1
 		self.stats["sessions"] += 1
