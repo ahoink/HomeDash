@@ -179,7 +179,8 @@ class TaskTracker():
 
 		saveData(self.tasks)
 		if last != self.prev_state[name]["last"]:
-			editLastCompletedTime(name, last)
+			if not editLastCompletedTime(name, last):
+				return "Error occurred updating timestamp"
 
 		return "sall good"
 
@@ -267,6 +268,7 @@ def editLastCompletedTime(task_name, t):
 	idx = -1
 	idx_new = -1
 	for i in range(len(data)-1,0,-1):
+		# Find task and update score and timestamp
 		if idx < 0 and task_name in data[i][0]:
 			last1 = -(data[i][3] * data[i][2] - data[i][1])
 			new_score = (t - last1) / data[i][2]
@@ -275,20 +277,27 @@ def editLastCompletedTime(task_name, t):
 
 			idx = i
 			continue
+		# find new position to place the task
 		if idx >= 0 and data[i][1] < data[idx][1]:
 			idx_new = i+1
 			break
 
 	if idx_new < 0:
 		print("ERROR: Could not find a stat point earlier than %d" % data[idx][1])
-		return
+		return False
 
+	# reorder stats to move task to new position
+	# keep all up until target task's new position (new_idx)
+	# add in target task data (from position idx)
+	# concat data up until the target task's old position
+	# skip the target task's old position and concat the rest of the data through the end
 	data = data[:idx_new] + [data[idx]] + data[idx_new:idx] + data[idx+1:]
 
 	with open("data/stats.csv", "w") as f:
 		for d in data:
 			f.write("%s,%d,%d,%f,%d,%d\n" % (d[0], d[1], d[2], d[3], d[4], d[5]))
-			
+	return True
+
 
 def normalizeScore(score):
 	return 100 * (1 - min(1, max(0, score-1)))	
@@ -449,10 +458,14 @@ def genGridPlot(productivity=[]):
 	x = 0
 	y = 0
 	day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+	
+	#extra_days = first_day_idx + (6-last_day_idx)
+	#if (len(productivity)+extra_days) > 364:
+	#	productivity = productivity[-365+extra_days:]
+
 	first_day = time.strftime("%A", time.localtime(productivity[0][0]))
-	#for i in range(-15, 0):
-	#	print(time.strftime("%d-%m-%y", time.localtime(productivity[i][0])))
 	y = day_names.index(first_day) * grid_size
+	
 	for p in productivity:
 		color = colorFromNormScore(p[1])
 		for j in range(y, y+sq_size):
@@ -468,7 +481,7 @@ def genGridPlot(productivity=[]):
 				for j in range(tempy, height):
 					px[tempx, j] = (0, 0, 0)
 			if tempy:
-				xlim = int(tempx+sq_size+diff*2)
+				xlim = int(x+sq_size+diff)
 				for i in range(tempx, xlim):
 					px[i, tempy] = (0, 0, 0)
 				for j in range(0, tempy):
@@ -478,7 +491,6 @@ def genGridPlot(productivity=[]):
 		if y >= height:
 			y = 0
 			x += grid_size
-	
 
 	return img, day_names.index(first_day)
 
