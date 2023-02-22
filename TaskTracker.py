@@ -459,14 +459,20 @@ def genGridPlot(productivity=[]):
 	y = 0
 	day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 	
-	#extra_days = first_day_idx + (6-last_day_idx)
-	#if (len(productivity)+extra_days) > 364:
-	#	productivity = productivity[-365+extra_days:]
+	first_day = time.strftime("%A", time.localtime(productivity[0][0]))
+	last_day = time.strftime("%A", time.localtime(productivity[-1][0]))
+	first_day_idx = day_names.index(first_day)
+	last_day_idx = day_names.index(last_day)
+	extra_days = 6 - last_day_idx#first_day_idx + (6-last_day_idx)
+	if (len(productivity)+extra_days) > 364:
+		productivity = productivity[-364+extra_days:]
 
 	first_day = time.strftime("%A", time.localtime(productivity[0][0]))
 	y = day_names.index(first_day) * grid_size
 	
 	for p in productivity:
+		#temp_day = time.strftime("%m-%d", time.localtime(p[0]))
+		#print(temp_day)
 		color = colorFromNormScore(p[1])
 		for j in range(y, y+sq_size):
 			for i in range(x, x+sq_size):
