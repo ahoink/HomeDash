@@ -23,6 +23,7 @@
 			<i class="fa fa-bars"></i>
 		</a>
 	</div>
+	<div class="indivCoinSubmit">
 	<form id="myForm" action="#" method="POST" onsubmit="submitCoin();return false">
 		<b><u>Add Coin</u></b>
 		<br>
@@ -43,16 +44,35 @@
 		<br>
 		<input type="submit" class="myButton" id="csubmit" value="Submit">
 	</form>
+	</div>
+	<div class="massCoinSubmit">
+	<form id="massSubmitForm" action="#" method="POST" onsubmit="massSubmitCoin();return false">
+		<b><u>Mass Add</u></b>
+		<br>
+		# Coins:
+		<input pattern="[0-9]*" type="text" id="massadd" name="massadd" size="15">
+		<input type="submit" class="myButton" id="massAddBtn" value="Submit">
+	</form>
+	</div>
+
 	<pre id="submit_status"></pre>
 	<button type="button" class="stylized" id="saveBtn" onClick="saveCoinData(event);">Save</button>
 	<br>
 	<button type="button" class="stylized" id="undoBtn" onClick="undoLast(event);">Undo</button>
 	<pre id="recently_added">{{ add_history }}</pre>
+
+	<label class="switch">
+		<input type="checkbox" id="coinToggle" onClick="toggleCoinSubmit();">
+		<span class="slider round"></span>
+	</label>
+
 	<img src={{ image }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<img src={{ image2 }} style="max-width:100%;height:auto;" alt="Coin plot">
 	<script src="static/js/common.js"></script>
 	<script src="static/js/coins.js"></script>
 	<script>
+		document.getElementById("coinToggle").checked = false;
+		document.getElementsByClassName("massCoinSubmit")[0].style.display = "none";
 	</script>
   </body>
 </html>

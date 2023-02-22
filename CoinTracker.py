@@ -40,6 +40,15 @@ class CoinTracker():
 
 		return "sall good"
 
+	def massAdd(self, num):
+		if not num.isdigit():
+			return "Invalid - must be number"
+
+		self.memorial["undocumented"]["None"] += int(num)
+		self.history.append(("undocumented", int(num)))
+
+		return "sall good"
+
 	def getHistory(self):
 		hist = ""
 		for coin in self.history:
@@ -74,14 +83,20 @@ class CoinTracker():
 			last = self.history.pop()
 			year = last[0] #self.last_year[0]
 			mark = last[1] #self.last_year[1]
-			if 1909 <= int(year) <= 1958:
-				self.wheat[year][mark] -= 1
-			elif 1959 <= int(year) <= 1981:
-				self.memorial[year][mark] -= 1
-			rem = "Removed %s" % year
-			if mark != "None": rem += " %s" % mark
-			#self.last_year = ("", "")
-			return rem
+
+			if year == "undocumented":
+				self.memorial["undocumented"]["None"] -= int(mark)
+				rem = "Removed %s undocumented coins" % mark
+				return rem
+			else:
+				if 1909 <= int(year) <= 1958:
+					self.wheat[year][mark] -= 1
+				elif 1959 <= int(year) <= 1981:
+					self.memorial[year][mark] -= 1
+				rem = "Removed %s" % year
+				if mark != "None": rem += " %s" % mark
+				#self.last_year = ("", "")
+				return rem
 		else:
 			return "Nothing to undo"
 
@@ -146,7 +161,11 @@ def PlotData(coll, supply, title, fig=None):
 	coll_S_totals = []
 	supply_totals = []
 	short_years = []
+	undoc = 0
 	for year in coll:
+		if year == "undocumented":
+			undoc += coll[year]["None"]
+			continue
 		tot = coll[year]["None"] + coll[year]["D"] + coll[year]["S"]
 		coll_totals.append(tot)
 		coll_D_totals.append(coll[year]["D"] + coll[year]["S"])
@@ -207,7 +226,7 @@ def PlotData(coll, supply, title, fig=None):
 		#plt.text(79, ax.get_ylim()[1]*0.95, sum(coll_totals[18:]))
 
 		price_lb = GetCopperPrice()
-		lbs = sum(coll_totals) * (0.95 * 3.11) / 453.6 # 3.11 g per penny, 95% copper, 453.6 g per pound
+		lbs = (sum(coll_totals)+undoc) * (0.95 * 3.11) / 453.6 # 3.11 g per penny, 95% copper, 453.6 g per pound
 		title += " [Copper value \$%.2f, %.1f lbs @ \$%.2f/lb]" % (lbs * price_lb, lbs, price_lb)
 	plt.xticks(rotation=-45)
 	ax.set_xticks(short_years)
@@ -220,7 +239,7 @@ def PlotData(coll, supply, title, fig=None):
 	ax2.set_ylim([0, ax2.get_ylim()[1]])
 	ax2.set_ylabel("Total Mintage (100 million)")
 
-	fig.suptitle("%d %s" % (sum(coll_totals), title))
+	fig.suptitle("%d %s" % (sum(coll_totals) + undoc, title))
 	fig.tight_layout()
 
 	return fig

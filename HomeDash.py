@@ -15,6 +15,7 @@ import PlantTracker
 import MindTracker
 import Weather
 import CoinTracker
+import LoopringTracker
 
 app = Flask(__name__)
 task_proc = TaskTracker.TaskTracker()
@@ -88,6 +89,9 @@ def readConfig():
 		elif cat == "login":
 			config["user"] = splitted[1]
 			config["pass"] = splitted[2]
+		elif cat == "loopring":
+			config["lrAcc"] = int(splitted[1])
+			config["ammTknPair"] = splitted[2]
 		else:
 			print("Unknown category '%s'" % cat) 
 	return config
@@ -247,6 +251,21 @@ def coinsPage():
 	historyText = coin_proc.getHistory()
 	return render_template("coins.html", image=imagestr, image2=imagestr2, add_history=historyText)
 
+@app.route("/loopring")
+def loopringPage():
+	config = readConfig()
+	acc = config["lrAcc"]
+	tkn_pair = config["ammTknPair"]
+	
+	rewards_str = LoopringTracker.GetRewardsString(acc, tkn_pair)
+	fig, last = LoopringTracker.plotData()
+	output = io.BytesIO()
+	FigureCanvas(fig).print_png(output)
+	imagestr = "data:image/png;base64,"
+	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
+
+	return render_template("loopring.html", image=imagestr, lastUpdate=last, rewards_str=rewards_str)
+
 @app.route("/logs")
 def logsPage():
 	data = ReadLogs()
@@ -294,6 +313,17 @@ def getPlants():
 def getInv():
 	data = inv_proc.getPortfolio()
 	return Response(json.dumps(data), mimetype="text/json")
+
+@app.route("/getloopring", methods=["GET"])
+def getLR():
+	args = request.args
+	num = int(args.get("num"))
+	fig, last = LoopringTracker.plotData(num)
+	output = io.BytesIO()
+	FigureCanvas(fig).print_png(output)
+	imagestr = "data:image/png;base64,"
+	imagestr += base64.b64encode(output.getvalue()).decode("utf8")
+	return imagestr
 
 @app.route("/post", methods=["POST"])
 def postData():
@@ -344,7 +374,10 @@ def postData():
 		elif cmdType == "Mind":
 			res = mind_proc.addSession(int(float(request.form["duration"])))
 		elif cmdType == "Coin":
-			res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
+			if "massAdd" in request.form:
+				res = coin_proc.massAdd(request.form["massAdd"])
+			else:
+				res = coin_proc.addPenny(request.form["year"], request.form["mintmark"])
 		else:
 			res = "Invalid command type '%s'" % cmdType
 			print(res)
