@@ -239,6 +239,7 @@ def plotStats():
 		temp = expense_stats.get(expense_name, {"min":999999, "max":0, "tot":0, "cnt":0})
 		temp["min"] = min(temp["min"], expense_amt)
 		temp["max"] = max(temp["max"], expense_amt)
+		temp["items"] = temp.get("items", []) + [expense_amt]
 		temp["tot"] += expense_amt
 		temp["cnt"] += 1
 		expense_stats[expense_name] = temp
@@ -249,6 +250,17 @@ def plotStats():
 		min_amt = expense_stats[e]["min"]
 		max_amt = expense_stats[e]["max"]
 		avg_amt = expense_stats[e]["tot"] / expense_stats[e]["cnt"]
+
+		# median
+		expense_stats[e]["items"].sort()
+		med_idx = int(len(expense_stats[e]["items"])/2-1)
+		med_amt = expense_stats[e]["items"][med_idx]
+		if len(expense_stats[e]["items"]) % 2 == 0:
+			med_amt = (med_amt + expense_stats[e]["items"][med_idx+1]) / 2
+		# compare median to avg, if avg is >20% above median, display median instead
+		if avg_amt > med_amt * 1.2:
+			avg_amt = med_amt
+
 		if min_amt != max_amt:
 			js_stats[e] = {"min":min_amt, "max":max_amt, "avg":round(avg_amt,2)}
 
