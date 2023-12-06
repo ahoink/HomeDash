@@ -193,7 +193,7 @@ def readStats():
 	stats = []
 	with open("data/networth.csv", 'r') as f:
 		stats = f.readlines()
-	stats = [x.replace("\n", "") for x in stats[1:]]
+	stats = [x.replace("\n", "") for x in stats[1:] if "#" not in x]
 	return stats
 
 
@@ -231,15 +231,18 @@ def plotStats(curr_val=0):
 	xlabels = []
 	data = []
 	prev_label = ""
+	idx = 0
 	for i in range(len(stats)):
 		splitted = stats[i].split(",")
 		timestamp = int(splitted[0])
 		value = float(splitted[1])
 
-		if timestamp <= pastyear_cutoff: continue
+		if timestamp <= pastyear_cutoff: 
+			idx += 1
+			continue
 		month = time.strftime("%b", time.localtime(timestamp))
 		if month != prev_label:
-			xticks.append(i)
+			xticks.append(i-idx)
 			xlabels.append(month)
 			prev_label = month
 
