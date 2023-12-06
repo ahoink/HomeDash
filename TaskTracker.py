@@ -237,9 +237,9 @@ def saveData(data):
 			(t, data[t]["last"], data[t]["freq"], data[t]["timecost"], data[t]["weight"], data[t]["isActive"]))
 			#(t[0], t[1], t[2], t[3], t[4], t[5]))
 
-def readStats():
+def readStats(filename="data/stats.csv"):
 	data = []
-	with open("data/stats.csv", 'r') as f:
+	with open(filename, 'r') as f:
 		data = f.readlines()
 	data = [x.replace("\n","").split(',') for x in data]
 	for i in range(len(data)):
@@ -303,7 +303,7 @@ def normalizeScore(score):
 	return 100 * (1 - min(1, max(0, score-1)))	
 
 
-def processStatsData(data, tasks, retDaily=True):
+def processStatsData(data, tasks, retDaily=True, ignoreOld=True):
 	productivity = []
 	daily_prod = []
 	completed = []
@@ -334,7 +334,7 @@ def processStatsData(data, tasks, retDaily=True):
 		day = time.strftime("%A", time.localtime(task_completed))
 		dt = datetime.fromtimestamp(task_completed)
 		tasks[task_name]["last"] = task_completed
-		if dt < past_year: continue
+		if ignoreOld and dt < past_year: continue
 		prod_score = normalizeScore(task_score)
 		#productivity.append((prod_score * weights[task_name], weights[task_name]))
 		# increment number for tasks performed on this day
@@ -374,7 +374,7 @@ def processStatsData(data, tasks, retDaily=True):
 			curr_date = datetime(dt.year, dt.month, dt.day, 23, 59, 59)
 
 	# get daily score for today
-	while today_dt >= curr_date:
+	while ignoreOld and today_dt >= curr_date:
 		ts = datetime.timestamp(curr_date)
 		temp_prod = productivity[-WMA_INT:]
 		# account for overdue tasks
@@ -469,7 +469,7 @@ def genGridPlot(productivity=[]):
 
 	first_day = time.strftime("%A", time.localtime(productivity[0][0]))
 	y = day_names.index(first_day) * grid_size
-	
+
 	for p in productivity:
 		#temp_day = time.strftime("%m-%d", time.localtime(p[0]))
 		#print(temp_day)
